@@ -1,0 +1,6 @@
+# artifacts/iot_events.log
+{"key":"device_status","value":"online","timestamp":"2023-10-16T08:55:00Z","device_id":"pi-01","ip":"192.168.10.55"}
+{"key":"temperature","value":"77F","timestamp":"2023-10-16T08:56:10Z","device_id":"pi-01","ip":"192.168.10.55"}
+{"key":"login","value":"failed","timestamp":"2023-10-16T08:57:22Z","device_id":"pi-01","ip":"192.168.10.55","user":"admin"}
+{"key":"usb_event","value":"new_device","timestamp":"2023-10-16T08:58:05Z","device_id":"pi-01","ip":"192.168.10.55"}
+{"key":"login","value":"success","timestamp":"2023-10-16T08:59:13Z","device_id":"pi-01","ip":"192.168.10.55","user":"admin"}
