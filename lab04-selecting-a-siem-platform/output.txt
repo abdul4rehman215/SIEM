@@ -1,0 +1,187 @@
+# (no output)
+
+# (nano editor opened)
+
+# (nano editor opened)
+
+PRETTY_NAME="Ubuntu 24.04.1 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.1 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Hit:4 http://security.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Calculating upgrade... Done
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Package openjdk-11-jdk is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+
+E: Package 'openjdk-11-jdk' has no installation candidate
+
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  openjdk-17-jdk-headless openjdk-17-jre openjdk-17-jre-headless
+Suggested packages:
+  openjdk-17-demo openjdk-17-source visualvm
+The following NEW packages will be installed:
+  openjdk-17-jdk openjdk-17-jdk-headless openjdk-17-jre openjdk-17-jre-headless
+0 upgraded, 4 newly installed, 0 to remove and 0 not upgraded.
+Need to get 118 MB of archives.
+After this operation, 307 MB of additional disk space will be used.
+Fetched 118 MB in 4s (28.9 MB/s)
+Setting up openjdk-17-jre-headless:amd64 (17.0.12+7-1ubuntu2) ...
+Setting up openjdk-17-jre:amd64 (17.0.12+7-1ubuntu2) ...
+Setting up openjdk-17-jdk-headless:amd64 (17.0.12+7-1ubuntu2) ...
+Setting up openjdk-17-jdk:amd64 (17.0.12+7-1ubuntu2) ...
+Processing triggers for ca-certificates-java (20240110) ...
+done.
+
+openjdk version "17.0.12" 2024-07-16
+OpenJDK Runtime Environment (build 17.0.12+7-Ubuntu-1ubuntu2)
+OpenJDK 64-Bit Server VM (build 17.0.12+7-Ubuntu-1ubuntu2, mixed mode, sharing)
+
+Warning: apt-key is deprecated. Manage keyring files in trusted.gpg.d instead (see apt-key(8)).
+OK
+
+# (no output)
+
+Get:1 https://artifacts.elastic.co/packages/7.x/apt stable InRelease [13.7 kB]
+Hit:2 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Hit:5 http://security.ubuntu.com/ubuntu noble-security InRelease
+Get:6 https://artifacts.elastic.co/packages/7.x/apt stable/main amd64 Packages [51.2 kB]
+Fetched 64.9 kB in 1s (79.8 kB/s)
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following NEW packages will be installed:
+  elasticsearch
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get 330 MB of archives.
+After this operation, 715 MB of additional disk space will be used.
+Get:1 https://artifacts.elastic.co/packages/7.x/apt stable/main amd64 elasticsearch amd64 7.17.22 [330 MB]
+Fetched 330 MB in 14s (23.2 MB/s)
+Selecting previously unselected package elasticsearch.
+(Reading database ... 81234 files and directories currently installed.)
+Preparing to unpack .../elasticsearch_7.17.22_amd64.deb ...
+Unpacking elasticsearch (7.17.22) ...
+Setting up elasticsearch (7.17.22) ...
+Created elasticsearch keystore in /etc/elasticsearch/elasticsearch.keystore
+Processing triggers for man-db (2.12.0-4build2) ...
+
+# (nano editor opened)
+
+# (no output)
+
+Created symlink /etc/systemd/system/multi-user.target.wants/elasticsearch.service → /lib/systemd/system/elasticsearch.service.
+
+● elasticsearch.service - Elasticsearch
+     Loaded: loaded (/lib/systemd/system/elasticsearch.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2025-08-18 11:02:44 UTC; 18s ago
+       Docs: https://www.elastic.co
+   Main PID: 18642 (java)
+      Tasks: 71 (limit: 2234)
+     Memory: 1.1G (peak: 1.2G)
+        CPU: 12.330s
+     CGroup: /system.slice/elasticsearch.service
+             └─18642 /usr/share/elasticsearch/jdk/bin/java ...
+
+{
+  "name" : "siem-node-1",
+  "cluster_name" : "siem-lab-cluster",
+  "cluster_uuid" : "w1o5A2m9R9G0vS0vYqQyTg",
+  "version" : {
+    "number" : "7.17.22",
+
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following NEW packages will be installed:
+  logstash
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get 304 MB of archives.
+After this operation, 642 MB of additional disk space will be used.
+Get:1 https://artifacts.elastic.co/packages/7.x/apt stable/main amd64 logstash all 1:7.17.22-1 [304 MB]
+Fetched 304 MB in 13s (22.9 MB/s)
+Selecting previously unselected package logstash.
+(Reading database ... 82810 files and directories currently installed.)
+Preparing to unpack .../logstash_1%3a7.17.22-1_all.deb ...
+Unpacking logstash (1:7.17.22-1) ...
+Setting up logstash (1:7.17.22-1) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+
+# (nano editor opened)
+
+# (no output)
+
+Created symlink /etc/systemd/system/multi-user.target.wants/logstash.service → /lib/systemd/system/logstash.service.
+
+● logstash.service - logstash
+     Loaded: loaded (/lib/systemd/system/logstash.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2025-08-18 11:06:31 UTC; 22s ago
+   Main PID: 20118 (java)
+      Tasks: 31 (limit: 2234)
+     Memory: 506.3M
+        CPU: 7.118s
+     CGroup: /system.slice/logstash.service
+             └─20118 /usr/share/logstash/jdk/bin/java ...
+
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following NEW packages will be installed:
+  kibana
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get 268 MB of archives.
+After this operation, 586 MB of additional disk space will be used.
+Get:1 https://artifacts.elastic.co/packages/7.x/apt stable/main amd64 kibana amd64 7.17.22 [268 MB]
+Fetched 268 MB in 12s (22.0 MB/s)
+Selecting previously unselected package kibana.
+(Reading database ... 85290 files and directories currently installed.)
+Preparing to unpack .../kibana_7.17.22_amd64.deb ...
+Unpacking kibana (7.17.22) ...
+Setting up kibana (7.17.22) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+
+# (nano editor opened)
+
+# (no output)
+
+Created symlink /etc/systemd/system/multi-user.target.wants/kibana.service → /lib/systemd/system/kibana.service.
+
+● kibana.service - Kibana
+     Loaded: loaded (/lib/systemd/system/kibana.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2025-08-18 11:09:18 UTC; 17s ago
+       Docs: https://www.elastic.co
+   Main PID: 21409 (node)
+      Tasks: 11 (limit: 2234)
+     Memory: 244.6M
+        CPU: 3.721s
+     CGroup: /system.slice/kibana.service
+             └─21409 /usr/share/kibana/bin/../node/bin/node ...
+
+LISTEN 0      4096         0.0.0.0:9200       0.0.0.0:*    users:(("java",pid=18642,fd=369))
+LISTEN 0      4096         0.0.0.0:5601       0.0.0.0:*    users:(("node",pid=21409,fd=34))
+LISTEN 0      4096         0.0.0.0:5044       0.0.0.0:*    users:(("java",pid=20118,fd=228))
