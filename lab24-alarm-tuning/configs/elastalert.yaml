@@ -1,0 +1,15 @@
+rules_folder: /etc/elastalert/rules
+run_every:
+  minutes: 1
+buffer_time:
+  minutes: 15
+
+es_host: localhost
+es_port: 9200
+
+writeback_index: elastalert_status
+use_ssl: False
+verify_certs: False
+
+alert_time_limit:
+  days: 2
