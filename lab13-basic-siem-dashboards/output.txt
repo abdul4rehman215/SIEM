@@ -1,0 +1,52 @@
+● elasticsearch.service - Elasticsearch
+     Loaded: loaded (/etc/systemd/system/elasticsearch.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-02-28 20:12:41 UTC; 2h 01min ago
+       Docs: https://www.elastic.co
+   Main PID: 931 (java)
+      Tasks: 88 (limit: 2220)
+     Memory: 1.4G (peak: 1.5G)
+        CPU: 5min 18s
+     CGroup: /system.slice/elasticsearch.service
+             └─931 /usr/share/elasticsearch/jdk/bin/java -Xms1g -Xmx1g -Des.path.home=/usr/share/elasticsearch ...
+
+Feb 28 20:12:41 ip-172-31-10-168 systemd[1]: Started elasticsearch.service - Elasticsearch.
+Feb 28 20:12:44 ip-172-31-10-168 elasticsearch[931]: [2026-02-28T20:12:44,911][INFO ][o.e.n.Node               ] [siem-node] started
+
+● logstash.service - logstash
+     Loaded: loaded (/etc/systemd/system/logstash.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-02-28 20:15:02 UTC; 1h 59min ago
+   Main PID: 1124 (java)
+      Tasks: 24 (limit: 2220)
+     Memory: 623.1M (peak: 701.2M)
+        CPU: 2min 44s
+     CGroup: /system.slice/logstash.service
+             └─1124 /usr/share/logstash/jdk/bin/java -Xms1g -Xmx1g -Djava.awt.headless=true ...
+
+Feb 28 20:15:02 ip-172-31-10-168 systemd[1]: Started logstash.service - logstash.
+Feb 28 20:15:06 ip-172-31-10-168 logstash[1124]: [INFO ][logstash.javapipeline    ][main] Pipeline started {"pipeline.id"=>"main"}
+
+● kibana.service - Kibana
+     Loaded: loaded (/etc/systemd/system/kibana.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-02-28 20:17:19 UTC; 1h 57min ago
+   Main PID: 1310 (node)
+      Tasks: 16 (limit: 2220)
+     Memory: 312.6M (peak: 335.4M)
+        CPU: 1min 10s
+     CGroup: /system.slice/kibana.service
+             └─1310 /usr/share/kibana/bin/../node/bin/node /usr/share/kibana/bin/../src/cli/dist ...
+
+Feb 28 20:17:19 ip-172-31-10-168 systemd[1]: Started kibana.service - Kibana.
+Feb 28 20:17:32 ip-172-31-10-168 kibana[1310]: [2026-02-28T20:17:32.883+00:00][INFO ][http.server.Preboot] http server running at http://0.0.0.0:5601
+
+Aug 29 01:00:00 mymachine auth: user root logged in
+
+# (nano editor opened)
+
+Using bundled JDK: /usr/share/logstash/jdk
+WARNING: Could not find logstash.yml which is typically located in $LS_HOME/config or /etc/logstash. You can specify the path using --path.settings.
+Sending Logstash logs to /var/log/logstash which is now configured via log4j2.properties
+Configuration OK
+
+health status index                 uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   siem-auth-2026.02.28  9VZ4cC3fSxKZVgk3z5nY9A   1   0          8            0    132.4kb        132.4kb
+green  open   logs-syslog-2026.02.28 8bA3mC9cT0mS9v3q2lK2Xg  1   0        312            0      1.2mb          1.2mb
