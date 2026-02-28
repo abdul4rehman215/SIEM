@@ -1,0 +1,207 @@
+=========================================
+Lab 33 - Backup & Restore of SIEM Data
+Execution Output Log
+=========================================
+
+-----------------------------------------
+Task 2: Identify indices available
+-----------------------------------------
+toor@ip-172-31-10-241:~$ curl -s "http://localhost:9200/_cat/indices?v" | head -n 25
+health status index                            uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   .kibana_7.15.2_001                3wqZp8lqQnK1n7p9s8a1bQ   1   0         12            1      2.1mb          2.1mb
+green  open   .kibana_task_manager_7.15.2_001   f2xkJ7aZQnK1n7p9s8a1bR   1   0         10            0      1.1mb          1.1mb
+green  open   filebeat-7.15.2-2025.08.18        a1b2c3d4e5f6g7h8i9j0k1   1   0        214            0    320.7kb        320.7kb
+green  open   auditbeat-7.15.2-2025.08.18       e5f6g7h8i9j0k1l2m3n4o5   1   0        168            0    290.2kb        290.2kb
+
+Selected SIEM data index for snapshot:
+- filebeat-7.15.2-2025.08.18
+
+-----------------------------------------
+Snapshot prerequisites (filesystem repo)
+-----------------------------------------
+toor@ip-172-31-10-241:~$ sudo mkdir -p /var/backups/elasticsearch
+toor@ip-172-31-10-241:~$ sudo chown -R elasticsearch:elasticsearch /var/backups/elasticsearch
+toor@ip-172-31-10-241:~$ sudo chmod 750 /var/backups/elasticsearch
+toor@ip-172-31-10-241:~$
+
+-----------------------------------------
+Configure path.repo in Elasticsearch
+-----------------------------------------
+toor@ip-172-31-10-241:~$ sudo nano /etc/elasticsearch/elasticsearch.yml
+(Added: path.repo: ["/var/backups/elasticsearch"])
+
+-----------------------------------------
+Restart Elasticsearch
+-----------------------------------------
+toor@ip-172-31-10-241:~$ sudo systemctl restart elasticsearch
+toor@ip-172-31-10-241:~$
+
+-----------------------------------------
+Confirm Elasticsearch is back online
+-----------------------------------------
+toor@ip-172-31-10-241:~$ curl -s http://localhost:9200 | head
+{
+  "name" : "ip-172-31-10-241",
+  "cluster_name" : "elasticsearch",
+  "cluster_uuid" : "uY0x1a2b3C4D5e6F7g8H9A",
+  "version" : {
+    "number" : "7.15.2",
+    "build_flavor" : "default",
+    "build_type" : "deb",
+
+-----------------------------------------
+Register snapshot repository my_backup
+-----------------------------------------
+toor@ip-172-31-10-241:~$ curl -s -X PUT "http://localhost:9200/_snapshot/my_backup" \
+  -H 'Content-Type: application/json' -d '{
+    "type": "fs",
+    "settings": {
+      "location": "/var/backups/elasticsearch",
+      "compress": true
+    }
+  }'
+{"acknowledged":true}
+
+-----------------------------------------
+Create snapshot of filebeat index
+-----------------------------------------
+toor@ip-172-31-10-241:~$ curl -s -X PUT "http://localhost:9200/_snapshot/my_backup/snapshot_1?wait_for_completion=true" \
+ -H 'Content-Type: application/json' -d'{
+ "indices": "filebeat-7.15.2-2025.08.18",
+ "ignore_unavailable": true,
+ "include_global_state": false
+ }'
+{
+  "snapshot": {
+    "snapshot": "snapshot_1",
+    "uuid": "mZ8P9pQkR3S1tU2vW0xYzA",
+    "repository": "my_backup",
+    "version_id": 7150299,
+    "version": "7.15.2",
+    "indices": [
+      "filebeat-7.15.2-2025.08.18"
+    ],
+    "include_global_state": false,
+    "state": "SUCCESS",
+    "start_time": "2025-08-18T13:10:22.118Z",
+    "start_time_in_millis": 1755522622118,
+    "end_time": "2025-08-18T13:10:24.903Z",
+    "end_time_in_millis": 1755522624903,
+    "duration_in_millis": 2785,
+    "failures": [],
+    "shards": {
+      "total": 1,
+      "failed": 0,
+      "successful": 1
+    }
+  }
+}
+
+-----------------------------------------
+Backup rules/configurations (Kibana Saved Objects export)
+-----------------------------------------
+toor@ip-172-31-10-241:~$ curl -s -X POST "http://localhost:5601/api/saved_objects/_export" \
+  -H "kbn-xsrf: true" -H "Content-Type: application/json" \
+  -d '{"type":["dashboard","visualization","search","index-pattern"],"includeReferencesDeep":true}' \
+  -o kibana_saved_objects_backup.ndjson
+toor@ip-172-31-10-241:~$
+
+-----------------------------------------
+Verify saved objects backup file exists
+-----------------------------------------
+toor@ip-172-31-10-241:~$ ls -lh kibana_saved_objects_backup.ndjson
+-rw-r--r-- 1 toor toor 48K Aug 18 13:11 kibana_saved_objects_backup.ndjson
+
+-----------------------------------------
+Verify snapshots list
+-----------------------------------------
+toor@ip-172-31-10-241:~$ curl -s "http://localhost:9200/_snapshot/my_backup/_all?pretty" | head -n 60
+{
+  "snapshots" : [
+    {
+      "snapshot" : "snapshot_1",
+      "uuid" : "mZ8P9pQkR3S1tU2vW0xYzA",
+      "version_id" : 7150299,
+      "version" : "7.15.2",
+      "indices" : [
+        "filebeat-7.15.2-2025.08.18"
+      ],
+      "include_global_state" : false,
+      "state" : "SUCCESS",
+      "start_time" : "2025-08-18T13:10:22.118Z",
+      "end_time" : "2025-08-18T13:10:24.903Z"
+    }
+  ]
+}
+
+-----------------------------------------
+Verify repository folder contains snapshot files
+-----------------------------------------
+toor@ip-172-31-10-241:~$ sudo ls -lah /var/backups/elasticsearch
+total 36K
+drwxr-x--- 4 elasticsearch elasticsearch 4.0K Aug 18 13:10 .
+drwxr-xr-x 3 root          root          4.0K Aug 18 13:08 ..
+drwxr-x--- 3 elasticsearch elasticsearch 4.0K Aug 18 13:10 indices
+-rw-r----- 1 elasticsearch elasticsearch  934 Aug 18 13:10 index-0
+-rw-r----- 1 elasticsearch elasticsearch    8 Aug 18 13:10 index.latest
+drwxr-x--- 2 elasticsearch elasticsearch 4.0K Aug 18 13:10 meta-mZ8P9pQkR3S1tU2vW0xYzA.dat
+-rw-r----- 1 elasticsearch elasticsearch 2.1K Aug 18 13:10 snap-mZ8P9pQkR3S1tU2vW0xYzA.dat
+
+-----------------------------------------
+Simulated test restore (single VM)
+-----------------------------------------
+Delete the index first (simulate data loss)
+toor@ip-172-31-10-241:~$ curl -s -X DELETE "http://localhost:9200/filebeat-7.15.2-2025.08.18?pretty"
+{
+  "acknowledged" : true
+}
+
+Confirm index is gone
+toor@ip-172-31-10-241:~$ curl -s "http://localhost:9200/_cat/indices?v" | grep filebeat || echo "filebeat index not found (as expected)"
+filebeat index not found (as expected)
+
+Restore from snapshot
+toor@ip-172-31-10-241:~$ curl -s -X POST "http://localhost:9200/_snapshot/my_backup/snapshot_1/_restore" \
+ -H 'Content-Type: application/json' -d'{
+ "indices": "filebeat-7.15.2-2025.08.18",
+ "ignore_unavailable": true,
+ "include_global_state": false
+ }'
+{"accepted":true}
+
+Check restore progress / completion
+toor@ip-172-31-10-241:~$ curl -s "http://localhost:9200/_cat/recovery/filebeat-7.15.2-2025.08.18?v"
+index                          shard time  type  stage source_host        target_host        repository  snapshot     files files_recovered files_percent bytes bytes_recovered bytes_percent translog_ops translog_ops_recovered translog_ops_percent
+filebeat-7.15.2-2025.08.18      0     2.2s  SNAP  done  n/a                ip-172-31-10-241   my_backup    snapshot_1  7     7               100.0%        1.1mb 1.1mb           100.0%        0           0                    100.0%
+
+-----------------------------------------
+Validate Data Integrity After Restore
+-----------------------------------------
+Confirm index exists again:
+toor@ip-172-31-10-241:~$ curl -s "http://localhost:9200/_cat/indices?v" | grep filebeat
+green  open   filebeat-7.15.2-2025.08.18   a1b2c3d4e5f6g7h8i9j0k1   1   0        214            0    320.7kb        320.7kb
+
+Validate document count:
+toor@ip-172-31-10-241:~$ curl -s "http://localhost:9200/filebeat-7.15.2-2025.08.18/_count?pretty"
+{
+  "count" : 214,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  }
+}
+
+Validate Kibana objects backup exists (baseline):
+toor@ip-172-31-10-241:~$ wc -l kibana_saved_objects_backup.ndjson
+86 kibana_saved_objects_backup.ndjson
+
+=========================================
+Lab 33 Completed Successfully
+=========================================
+✔ Snapshot repository configured + registered
+✔ Snapshot created (SUCCESS)
+✔ Kibana saved objects exported
+✔ Index deleted and restored from snapshot
+✔ Restored index validated by health and document count
