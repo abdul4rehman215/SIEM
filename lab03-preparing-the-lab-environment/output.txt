@@ -1,0 +1,130 @@
+PRETTY_NAME="Ubuntu 24.04.1 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.1 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Hit:4 http://security.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+All packages are up to date.
+
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  dkms libgsoap-2.8.130 liblzf1 libqt5help5 libqt5opengl5 libqt5printsupport5
+  libqt5sql5 libqt5sql5-sqlite libqt5x11extras5 libsdl1.2debian
+Suggested packages:
+  virtualbox-qt | virtualbox
+The following NEW packages will be installed:
+  dkms libgsoap-2.8.130 liblzf1 libqt5help5 libqt5opengl5 libqt5printsupport5
+  libqt5sql5 libqt5sql5-sqlite libqt5x11extras5 libsdl1.2debian virtualbox
+0 upgraded, 12 newly installed, 0 to remove and 0 not upgraded.
+Need to get 92.8 MB of archives.
+After this operation, 346 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble/main amd64 liblzf1 amd64 3.6-4 [8,662 B]
+Get:2 http://archive.ubuntu.com/ubuntu noble/main amd64 libsdl1.2debian amd64 1.2.15+dfsg2-9 [191 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble/main amd64 virtualbox amd64 7.0.14-dfsg-1ubuntu1 [84.9 MB]
+Fetched 92.8 MB in 6s (15.1 MB/s)
+Selecting previously unselected package liblzf1:amd64.
+(Reading database ... 76240 files and directories currently installed.)
+Preparing to unpack .../liblzf1_3.6-4_amd64.deb ...
+Unpacking liblzf1:amd64 (3.6-4) ...
+Selecting previously unselected package dkms.
+Preparing to unpack .../dkms_3.0.10-9ubuntu2_all.deb ...
+Unpacking dkms (3.0.10-9ubuntu2) ...
+Selecting previously unselected package virtualbox.
+Preparing to unpack .../virtualbox_7.0.14-dfsg-1ubuntu1_amd64.deb ...
+Unpacking virtualbox (7.0.14-dfsg-1ubuntu1) ...
+Setting up liblzf1:amd64 (3.6-4) ...
+Setting up libsdl1.2debian:amd64 (1.2.15+dfsg2-9) ...
+Setting up dkms (3.0.10-9ubuntu2) ...
+Setting up virtualbox (7.0.14-dfsg-1ubuntu1) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Processing triggers for desktop-file-utils (0.27-2build1) ...
+
+7.0.14_Ubuntu
+
+# (no output)
+
+Virtual machine 'SIEM-VM' is created and registered.
+UUID: 2c9e2bf5-1f78-4b32-9e3c-7e1e99fd9a52
+Settings file: '/home/toor/VirtualBox VMs/SIEM-VM/SIEM-VM.vbox'
+
+# (no output)
+
+0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
+Disk image created. UUID: 9a2d4d77-6cbe-4d3b-8a54-8bead2b5a3d7
+
+# (no output)
+
+# (no output)
+
+# (no output)
+
+NIC 1:           MAC: 080027A1B2C3, Attachment: NAT, Cable connected: on, Trace: off (file: none), Type: 82540EM, Reported speed: 0 Mbps, Boot priority: 0
+
+total 0
+
+# (no output)
+
+Ubuntu ISO downloaded separately and stored as: ubuntu-24.04.1-live-server-amd64.iso
+
+VBoxManage: error: Could not find file for the medium 'ubuntu-24.04.1-live-server-amd64.iso' (0x80bb0001)
+VBoxManage: error: Context: "RTEXITCODE handleStorageAttach(HandlerArg *a)" at line 1291 of file VBoxManageStorageController.cpp
+
+Waiting for VM "SIEM-VM" to power on...
+VM "SIEM-VM" has been successfully started.
+
+"SIEM-VM" {2c9e2bf5-1f78-4b32-9e3c-7e1e99fd9a52}
+
+2: ens5: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9001 qdisc fq_codel state UP group default qlen 1000
+    link/ether 02:4a:93:1c:7e:11 brd ff:ff:ff:ff:ff:ff
+    inet 172.31.10.241/20 brd 172.31.15.255 scope global dynamic ens5
+       valid_lft 3257sec preferred_lft 3257sec
+    inet6 fe80::4a:93ff:fe1c:7e11/64 scope link
+       valid_lft forever preferred_lft forever
+
+default via 172.31.0.1 dev ens5 proto dhcp src 172.31.10.241 metric 100
+172.31.0.0/20 dev ens5 proto kernel scope link src 172.31.10.241
+172.31.0.1 dev ens5 proto dhcp scope link src 172.31.10.241 metric 100
+
+# (nano editor opened)
+
+# VM Network Documentation (SIEM-VM)
+
+## Host (Lab Machine) Network Settings
+- Interface: ens5
+- Host IP: 172.31.10.241/20
+- Default Gateway: 172.31.0.1
+- Notes: Cloud instance networking (EC2-style). Used as the hypervisor host in this lab.
+
+## SIEM-VM Network Settings (VirtualBox NAT)
+- Adapter 1: NAT (VirtualBox default NAT)
+- Expected VM IP format (inside VM after install): 10.0.2.15/24
+- Expected NAT gateway (inside VM): 10.0.2.2
+- Expected DNS (inside VM): 10.0.2.3 or inherited host DNS
+
+## What to capture after OS install
+Run inside the VM:
+- ip addr show
+- ip route
+
+Record:
+- VM IP address and CIDR prefix (subnet mask)
+- Default gateway
+- DNS servers (from /etc/resolv.conf)
