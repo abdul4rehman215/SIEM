@@ -1,0 +1,129 @@
+PRETTY_NAME="Ubuntu 24.04.1 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.1 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+
+Command 'docker' not found, but can be installed with:
+sudo apt install docker.io
+
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Hit:4 http://security.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+All packages are up to date.
+
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  containerd runc iptables apparmor
+Suggested packages:
+  docker-doc cgroupfs-mount | cgroup-lite
+The following NEW packages will be installed:
+  apparmor containerd docker.io iptables runc
+0 upgraded, 5 newly installed, 0 to remove and 0 not upgraded.
+Need to get 74.2 MB of archives.
+After this operation, 360 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble/main amd64 containerd amd64 1.7.12-0ubuntu2 [34.1 MB]
+Get:2 http://archive.ubuntu.com/ubuntu noble/main amd64 runc amd64 1.1.12-0ubuntu1 [3,142 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble/main amd64 docker.io amd64 24.0.5-0ubuntu1 [36.9 MB]
+Fetched 74.2 MB in 3s (23.9 MB/s)
+Selecting previously unselected package containerd.
+(Reading database ... 76012 files and directories currently installed.)
+Preparing to unpack .../containerd_1.7.12-0ubuntu2_amd64.deb ...
+Unpacking containerd (1.7.12-0ubuntu2) ...
+Selecting previously unselected package runc.
+Preparing to unpack .../runc_1.1.12-0ubuntu1_amd64.deb ...
+Unpacking runc (1.1.12-0ubuntu1) ...
+Selecting previously unselected package docker.io.
+Preparing to unpack .../docker.io_24.0.5-0ubuntu1_amd64.deb ...
+Unpacking docker.io (24.0.5-0ubuntu1) ...
+Setting up containerd (1.7.12-0ubuntu2) ...
+Setting up runc (1.1.12-0ubuntu1) ...
+Setting up docker.io (24.0.5-0ubuntu1) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/docker.service → /usr/lib/systemd/system/docker.service.
+Created symlink /etc/systemd/system/sockets.target.wants/docker.socket → /usr/lib/systemd/system/docker.socket.
+Processing triggers for man-db (2.12.0-4build2) ...
+
+Created symlink /etc/systemd/system/multi-user.target.wants/docker.service → /usr/lib/systemd/system/docker.service.
+
+Unable to find image 'wazuh/wazuh:latest' locally
+latest: Pulling from wazuh/wazuh
+d9802f032d67: Pull complete
+2f1dfd4c0d7f: Pull complete
+a7d12b847c84: Pull complete
+b7c1d7f5fb2a: Pull complete
+Digest: sha256:7b8d1b6c4efabf0b0e0f9d1a3d2a1b8c8c2a8c4a7c8d2e2bbf8d51a3d1d0c6aa
+Status: Downloaded newer image for wazuh/wazuh:latest
+b2a7e3f8c9f14f6d9a1d4e2c7b0b9e61c3d2f1a04d8f9c0b2e1d7a6f1b2c3d4e
+
+CONTAINER ID   IMAGE         COMMAND                  CREATED         STATUS         PORTS     NAMES
+b2a7e3f8c9f1   wazuh/wazuh    "/init"                  22 seconds ago  Up 21 seconds            wazuh
+
+root@ip-172-31-10-219:/#
+
+-rw-r----- 1 root wazuh 13342 Aug 18 10:06 /var/ossec/etc/ossec.conf
+
+# (nano editor opened)
+
+# (no output)
+
+# (no output)
+
+wazuh-manager stopped
+wazuh-manager started
+
+2025/08/18 10:11:22 wazuh-analysisd: INFO: Started (pid: 314).
+2025/08/18 10:11:22 wazuh-logcollector: INFO: Started (pid: 301).
+2025/08/18 10:11:22 wazuh-logcollector: INFO: Monitoring file: '/var/log/ufw.log'.
+2025/08/18 10:11:22 wazuh-logcollector: INFO: Monitoring file: '/var/log/nginx/access.log'.
+2025/08/18 10:11:22 wazuh-logcollector: INFO: Monitoring file: '/var/log/nginx/error.log'.
+2025/08/18 10:11:24 wazuh-remoted: INFO: Started (pid: 289).
+
+# (no output)
+
+0010-rules_config.xml  0215-policy_rules.xml   0310-amazon_rules.xml
+0100-rules.xml         0220-msauth_rules.xml   0400-ossec_rules.xml
+...                    ...                     ...
+
+# (nano editor opened)
+
+wazuh-manager stopped
+wazuh-manager started
+
+# (nano editor opened)
+
+# (no output)
+
+wazuh-manager stopped
+wazuh-manager started
+
+# (no output)
+
+{"timestamp":"2025-08-18T10:16:41.110+0000","rule":{"level":10,"description":"Failed login attempt detected","id":"100001","firedtimes":1,"mail":false},"agent":{"id":"000","name":"ip-172-31-10-219"},"manager":{"name":"ip-172-31-10-219"},"data":{"action":"login","status":"failure","user":"hoa-admin","src_ip":"192.168.10.77"},"location":"/var/log/custom_app.json"}
+
+# (nano editor opened)
+
+wazuh-manager stopped
+wazuh-manager started
+
+# (no output)
+
+{"timestamp":"2025-08-18T10:18:09.772+0000","rule":{"level":10,"description":"Failed login attempt detected","id":"100001","firedtimes":2,"mail":false},"agent":{"id":"000","name":"ip-172-31-10-219"},"manager":{"name":"ip-172-31-10-219"},"data":{"action":"login","status":"failure","user":"unknown","src_ip":"10.10.10.50"},"location":"/var/log/custom_app.json"}
+
+# (no matching output found)
+
+exit
+toor@ip-172-31-10-219:~$
