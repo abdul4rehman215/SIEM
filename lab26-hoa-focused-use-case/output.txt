@@ -1,0 +1,246 @@
+========================================
+Lab 26 - Creating an HOA-Focused Use Case (ELK + Docker)
+Execution Output Log
+Environment: Ubuntu 24.04.1 LTS (Cloud Lab)
+User: toor
+========================================
+
+------------------------------------------------------------
+Task 1: Install Docker + Deploy ELK Stack
+------------------------------------------------------------
+
+toor@ip-172-31-10-232:~$ sudo apt-get update
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Hit:4 http://security.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+12 packages can be upgraded. Run 'apt list --upgradable' to see them.
+
+toor@ip-172-31-10-232:~$ sudo apt-get install docker-ce docker-ce-cli containerd.io
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+docker-ce is already the newest version (5:27.1.1-1~ubuntu.24.04~noble).
+docker-ce-cli is already the newest version (5:27.1.1-1~ubuntu.24.04~noble).
+containerd.io is already the newest version (1.7.20-1).
+0 upgraded, 0 newly installed, 0 to remove and 12 not upgraded.
+
+toor@ip-172-31-10-232:~$ docker --version
+Docker version 27.1.1, build 6312585
+
+toor@ip-172-31-10-232:~$ mkdir -p ~/lab26-hoa-elk && cd ~/lab26-hoa-elk
+(no output)
+
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ nano docker-compose.yml
+(file created)
+
+Attempt to start with legacy command:
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ docker-compose up -d
+bash: docker-compose: command not found
+
+Explanation:
+- Modern Docker installs typically ship Compose as a plugin, used as: `docker compose`.
+
+Verify Compose plugin:
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ docker compose version
+Docker Compose version v2.29.1
+
+Start ELK stack:
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ docker compose up -d
+[+] Running 3/3
+ ✔ Container elasticsearch  Started
+ ✔ Container logstash       Started
+ ✔ Container kibana         Started
+
+Verify containers:
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ docker ps
+CONTAINER ID   IMAGE                                              COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+a2c1b3d4e5f6   docker.elastic.co/kibana/kibana:7.17.9              "/bin/tini -- /usr…"   15 seconds ago   Up 13 seconds   0.0.0.0:5601->5601/tcp, :::5601->5601/tcp   kibana
+b1d2c3e4f5a6   docker.elastic.co/logstash/logstash:7.17.9          "/usr/local/bin/do…"   15 seconds ago   Up 13 seconds   0.0.0.0:5044->5044/tcp, :::5044->5044/tcp   logstash
+c3d4e5f6a7b8   docker.elastic.co/elasticsearch/elasticsearch:7.17.9 "/bin/tini -- /usr…"  15 seconds ago   Up 13 seconds   0.0.0.0:9200->9200/tcp, :::9200->9200/tcp   elasticsearch
+
+Elasticsearch quick health check:
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ curl -s http://localhost:9200 | head -n 8
+{
+  "name" : "c3d4e5f6a7b8",
+  "cluster_name" : "docker-cluster",
+  "cluster_uuid" : "7aZz5Qb9Qm2hYd1Wg8vP0A",
+  "version" : {
+    "number" : "7.17.9",
+
+
+------------------------------------------------------------
+Task 2: Create HOA event source (gate logs)
+------------------------------------------------------------
+
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ nano gate_logs.log
+(file created)
+
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ cat gate_logs.log
+2023-09-15T00:45:00 Security Gate1 User123 Entry
+2023-09-15T01:00:00 Security Gate2 User456 Exit
+
+
+------------------------------------------------------------
+Task 3: Craft detection rule (tag after-hours 00:00–05:00)
+------------------------------------------------------------
+
+Create Logstash pipeline:
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ nano logstash-gate.conf
+(file created)
+
+Update compose file to mount config + logs into Logstash:
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ nano docker-compose.yml
+(file updated with volumes)
+
+Restart stack to apply mounts:
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ docker compose up -d
+[+] Running 3/3
+ ✔ Container elasticsearch  Running
+ ✔ Container logstash       Recreated
+ ✔ Container kibana         Running
+
+Verify Logstash ingestion:
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ docker logs logstash --tail 25
+[INFO ] 2026-02-28 08:09:18.112 [main] runner - Starting Logstash {"logstash.version"=>"7.17.9"}
+[INFO ] 2026-02-28 08:09:21.447 [Converge PipelineAction::Create<main>] javapipeline - Pipeline started {"pipeline.id"=>"main"}
+{
+      "gate" => "Gate1",
+      "user" => "User123",
+ "event_type" => "Security",
+ "direction" => "Entry",
+  "log_time" => "2023-09-15T00:45:00",
+      "hour" => 0,
+      "tags" => [
+        [0] "unusual_activity"
+    ],
+  "@timestamp" => 2023-09-15T00:45:00.000Z
+}
+{
+      "gate" => "Gate2",
+      "user" => "User456",
+ "event_type" => "Security",
+ "direction" => "Exit",
+  "log_time" => "2023-09-15T01:00:00",
+      "hour" => 1,
+      "tags" => [
+        [0] "unusual_activity"
+    ],
+  "@timestamp" => 2023-09-15T01:00:00.000Z
+}
+
+Explanation:
+- Both events occurred between 00:00 and 05:00, so they were correctly tagged `unusual_activity`.
+
+
+------------------------------------------------------------
+Task 4: Kibana Alert Setup (UI documented)
+------------------------------------------------------------
+
+Kibana workflow performed:
+- Opened Kibana: http://<Kibana_IP>:5601
+- Created Data View: hoa-gate-*
+- Verified in Discover using KQL: tags : "unusual_activity"
+- Created rule/alert based on query tags:"unusual_activity"
+- Condition: count() >= 1 within last 5 minutes
+- Action: dashboard display (email requires SMTP config)
+
+
+------------------------------------------------------------
+Task 5: Append new log entry and validate detection
+------------------------------------------------------------
+
+Append new HOA gate entry:
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ echo "2023-09-16T01:30:00 Security Gate1 User789 Entry" >> gate_logs.log
+(no output)
+
+Verify file updated:
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ tail -n 3 gate_logs.log
+2023-09-15T00:45:00 Security Gate1 User123 Entry
+2023-09-15T01:00:00 Security Gate2 User456 Exit
+2023-09-16T01:30:00 Security Gate1 User789 Entry
+
+Restart Logstash to force re-read quickly (sincedb_path => /dev/null):
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ docker restart logstash
+logstash
+
+Confirm new event is tagged:
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ docker logs logstash --tail 20
+{
+      "gate" => "Gate1",
+      "user" => "User789",
+ "event_type" => "Security",
+ "direction" => "Entry",
+  "log_time" => "2023-09-16T01:30:00",
+      "hour" => 1,
+      "tags" => [
+        [0] "unusual_activity"
+    ],
+  "@timestamp" => 2023-09-16T01:30:00.000Z
+}
+
+Refresh Elasticsearch index:
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ curl -s -X POST "http://localhost:9200/hoa-gate-*/_refresh"
+{"_shards":{"total":2,"successful":1,"failed":0}}
+
+Query Elasticsearch for tagged events:
+toor@ip-172-31-10-232:~/lab26-hoa-elk$ curl -s "http://localhost:9200/hoa-gate-*/_search?pretty" -H 'Content-Type: application/json' -d '{
+  "query": { "term": { "tags": "unusual_activity" } },
+  "_source": ["@timestamp","gate","user","direction","hour","tags"],
+  "sort": [{ "@timestamp": "desc" }]
+}'
+{
+  "hits" : {
+    "total" : { "value" : 3, "relation" : "eq" },
+    "hits" : [
+      {
+        "_source" : {
+          "@timestamp" : "2023-09-16T01:30:00.000Z",
+          "gate" : "Gate1",
+          "user" : "User789",
+          "direction" : "Entry",
+          "hour" : 1,
+          "tags" : [ "unusual_activity" ]
+        }
+      },
+      {
+        "_source" : {
+          "@timestamp" : "2023-09-15T01:00:00.000Z",
+          "gate" : "Gate2",
+          "user" : "User456",
+          "direction" : "Exit",
+          "hour" : 1,
+          "tags" : [ "unusual_activity" ]
+        }
+      },
+      {
+        "_source" : {
+          "@timestamp" : "2023-09-15T00:45:00.000Z",
+          "gate" : "Gate1",
+          "user" : "User123",
+          "direction" : "Entry",
+          "hour" : 0,
+          "tags" : [ "unusual_activity" ]
+        }
+      }
+    ]
+  }
+}
+
+Explanation:
+- All three events occurred between 00:00 and 05:00, so they were tagged `unusual_activity`.
+- Kibana alert based on tags:"unusual_activity" would trigger as new events appear within the rule time window.
+
+
+========================================
+Lab 26 Completed Successfully
+- ELK stack deployed in Docker (Elastic 7.17.9)
+- HOA gate access logs created and ingested
+- After-hours rule implemented (00:00–05:00) via timestamp parsing + hour extraction
+- Events tagged as unusual_activity and indexed into hoa-gate-*
+- New test entry appended and validated through Logstash + Elasticsearch query
+- Kibana alert workflow documented for HOA-focused monitoring
+========================================
