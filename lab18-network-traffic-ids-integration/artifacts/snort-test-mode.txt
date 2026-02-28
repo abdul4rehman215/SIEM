@@ -1,0 +1,11 @@
+Running in Test mode
+
+        --== Initializing Snort ==--
+Initializing Output Plugins!
+Initializing Preprocessors!
+Initializing Plug-ins!
+Parsing Rules file "/etc/snort/rules/snort.rules"
+Parsing Rules file "/etc/snort/rules/community.rules"
+
+Snort successfully validated the configuration!
+Snort exiting
