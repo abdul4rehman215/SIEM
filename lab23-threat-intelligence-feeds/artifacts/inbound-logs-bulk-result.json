@@ -1,0 +1,10 @@
+{
+  "took": 14,
+  "errors": false,
+  "items": [
+    { "index": { "status": 201 } },
+    { "index": { "status": 201 } },
+    { "index": { "status": 201 } },
+    { "index": { "status": 201 } }
+  ]
+}
