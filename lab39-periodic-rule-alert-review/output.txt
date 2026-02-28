@@ -1,0 +1,150 @@
+=========================================
+Lab 39 - Periodic Rule & Alert Review
+Execution Output Log
+=========================================
+
+-----------------------------------------
+Step 0: Create working directory
+-----------------------------------------
+toor@ip-172-31-10-204:~$ mkdir -p Lab39_Rule_Review && cd Lab39_Rule_Review
+toor@ip-172-31-10-204:~/Lab39_Rule_Review$
+
+-----------------------------------------
+Task 1.2: List all active rules (Prometheus)
+-----------------------------------------
+Confirm Prometheus is reachable
+toor@ip-172-31-10-204:~/Lab39_Rule_Review$ curl -I http://localhost:9090 | head
+HTTP/1.1 302 Found
+Location: /graph
+Date: Sun, 18 Aug 2025 16:31:02 GMT
+Content-Type: text/html; charset=utf-8
+
+Install jq (if needed)
+toor@ip-172-31-10-204:~/Lab39_Rule_Review$ jq --version
+bash: jq: command not found
+
+toor@ip-172-31-10-204:~/Lab39_Rule_Review$ sudo apt-get install -y jq
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following NEW packages will be installed:
+  jq libjq1 libonig5
+0 upgraded, 3 newly installed, 0 to remove and 87 not upgraded.
+Need to get 386 kB of archives.
+After this operation, 1,188 kB of additional disk space will be used.
+...
+Setting up jq (1.7.1-3ubuntu0.24.04.1) ...
+
+Run Prometheus rules API
+toor@ip-172-31-10-204:~/Lab39_Rule_Review$ curl -X GET http://localhost:9090/api/v1/rules | jq '.data.groups[] | {name: .name, rules: [.rules[] | {name: .name, type: .type, health: .health, lastEvaluation: .lastEvaluation}]}' | head -n 80
+{
+  "name": "prometheus",
+  "rules": []
+}
+{
+  "name": "node-exporter",
+  "rules": []
+}
+
+Observation:
+- This Prometheus instance had no custom alerting rules loaded.
+
+-----------------------------------------
+Create a sample rule to review (lab realism)
+-----------------------------------------
+Create rule file
+toor@ip-172-31-10-204:~/Lab39_Rule_Review$ sudo nano /etc/prometheus/rules.d/siem_alerts.yml
+(Added siem_health_rules group with HighCPUUsage_SIEMHost alert.)
+
+Ensure Prometheus loads rules directory
+toor@ip-172-31-10-204:~/Lab39_Rule_Review$ sudo grep -n "rule_files" -A3 /etc/prometheus/prometheus.yml | head -n 20
+36:rule_files:
+37-  - /etc/prometheus/rules.d/*.yml
+
+Reload Prometheus
+toor@ip-172-31-10-204:~/Lab39_Rule_Review$ sudo systemctl reload prometheus
+toor@ip-172-31-10-204:~/Lab39_Rule_Review$
+
+Confirm rule appears
+toor@ip-172-31-10-204:~/Lab39_Rule_Review$ curl -s http://localhost:9090/api/v1/rules | jq '.data.groups[] | select(.name=="siem_health_rules")'
+{
+  "name": "siem_health_rules",
+  "file": "/etc/prometheus/rules.d/siem_alerts.yml",
+  "interval": 15,
+  "rules": [
+    {
+      "name": "HighCPUUsage_SIEMHost",
+      "query": "100 - (avg by(instance)(irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100) > 95",
+      "duration": 600,
+      "labels": {
+        "severity": "high"
+      },
+      "annotations": {
+        "description": "CPU usage has been above 95% for more than 10 minutes on {{ $labels.instance }}.",
+        "summary": "High CPU usage detected on SIEM host"
+      },
+      "health": "ok",
+      "type": "alerting",
+      "lastEvaluation": "2025-08-18T16:33:30.113Z",
+      "evaluationTime": 0.000231
+    }
+  ]
+}
+
+-----------------------------------------
+Task 2: Evaluate and test the rule
+-----------------------------------------
+Query underlying CPU % (no threshold)
+toor@ip-172-31-10-204:~/Lab39_Rule_Review$ curl -sG "http://localhost:9090/api/v1/query" \
+  --data-urlencode 'query=100 - (avg by(instance)(irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)' | jq
+{
+  "status": "success",
+  "data": {
+    "resultType": "vector",
+    "result": [
+      {
+        "metric": {
+          "instance": "localhost:9100"
+        },
+        "value": [
+          1755525222.401,
+          "6.312885009"
+        ]
+      }
+    ]
+  }
+}
+
+Observation:
+- Current CPU ~ 6.31%, far below the 95% alert threshold.
+
+-----------------------------------------
+Task 3: Decide rule fate (Revise) + apply change
+-----------------------------------------
+Edit rule threshold (95% -> 85%)
+toor@ip-172-31-10-204:~/Lab39_Rule_Review$ sudo nano /etc/prometheus/rules.d/siem_alerts.yml
+(Updated expr threshold to >85)
+
+Reload Prometheus after revision
+toor@ip-172-31-10-204:~/Lab39_Rule_Review$ sudo systemctl reload prometheus
+toor@ip-172-31-10-204:~/Lab39_Rule_Review$
+
+-----------------------------------------
+Task 4: Document outcome
+-----------------------------------------
+Create review log
+toor@ip-172-31-10-204:~/Lab39_Rule_Review$ nano Rule_Review_Log.md
+
+Verify file exists
+toor@ip-172-31-10-204:~/Lab39_Rule_Review$ ls -lh
+total 4.0K
+-rw-r--r-- 1 toor toor 585 Aug 18 16:36 Rule_Review_Log.md
+
+=========================================
+Lab 39 Completed Successfully
+=========================================
+✔ Prometheus rules baseline reviewed (no initial rules)
+✔ Sample SIEM health alert rule created and loaded
+✔ Rule evaluated using real metric query
+✔ Rule revised (threshold lowered to improve early warning)
+✔ Review decision documented in Rule_Review_Log.md
