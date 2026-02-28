@@ -1,0 +1,252 @@
+========================================
+Lab 20 - Role-Based Access Control (RBAC)
+Execution Output Log
+Environment: Ubuntu 24.04.1 LTS (Cloud Lab)
+User: toor
+========================================
+
+------------------------------------------------------------
+Task 1: Setup the Environment
+------------------------------------------------------------
+
+toor@ip-172-31-10-188:~$ sudo apt update && sudo apt upgrade -y
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Hit:4 http://security.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+12 packages can be upgraded. Run 'apt list --upgradable' to see them.
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Calculating upgrade... Done
+The following packages will be upgraded:
+  openssl ubuntu-pro-client curl libcurl4 libc6
+5 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Need to get 6,214 kB of archives.
+After this operation, 0 B of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libc6 amd64 2.39-0ubuntu8.3 [3,274 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 openssl amd64 3.0.13-0ubuntu3.2 [1,163 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 curl amd64 8.5.0-2ubuntu10.2 [232 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libcurl4 amd64 8.5.0-2ubuntu10.2 [339 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 ubuntu-pro-client amd64 35.1~24.04 [1,206 kB]
+Fetched 6,214 kB in 2s (3,120 kB/s)
+(Reading database ... 97411 files and directories currently installed.)
+Preparing to unpack .../libc6_2.39-0ubuntu8.3_amd64.deb ...
+Unpacking libc6:amd64 (2.39-0ubuntu8.3) over (2.39-0ubuntu8.2) ...
+Setting up libc6:amd64 (2.39-0ubuntu8.3) ...
+Setting up openssl (3.0.13-0ubuntu3.2) ...
+Setting up libcurl4:amd64 (8.5.0-2ubuntu10.2) ...
+Setting up curl (8.5.0-2ubuntu10.2) ...
+Setting up ubuntu-pro-client (35.1~24.04) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.3) ...
+
+
+------------------------------------------------------------
+Install sudo/usermod/pam packages (lab intent + fix)
+------------------------------------------------------------
+
+toor@ip-172-31-10-188:~$ sudo apt install sudo usermod libpam0g-dev -y
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Package usermod is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+
+E: Package 'usermod' has no installation candidate
+
+toor@ip-172-31-10-188:~$ sudo apt install sudo passwd libpam0g-dev -y
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+sudo is already the newest version (1.9.15p5-3ubuntu5).
+passwd is already the newest version (1:4.13+dfsg1-4ubuntu1).
+The following NEW packages will be installed:
+  libpam0g-dev
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get 258 kB of archives.
+After this operation, 1,012 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble/main amd64 libpam0g-dev amd64 1.5.3-5ubuntu5 [258 kB]
+Fetched 258 kB in 1s (374 kB/s)
+Selecting previously unselected package libpam0g-dev:amd64.
+(Reading database ... 97411 files and directories currently installed.)
+Preparing to unpack .../libpam0g-dev_1.5.3-5ubuntu5_amd64.deb ...
+Unpacking libpam0g-dev:amd64 (1.5.3-5ubuntu5) ...
+Setting up libpam0g-dev:amd64 (1.5.3-5ubuntu5) ...
+
+toor@ip-172-31-10-188:~$ which usermod
+/usr/sbin/usermod
+
+
+------------------------------------------------------------
+Task 2: Create User Roles
+------------------------------------------------------------
+
+toor@ip-172-31-10-188:~$ sudo groupadd analyst
+(no output)
+
+toor@ip-172-31-10-188:~$ sudo useradd -m -s /bin/bash -g analyst analyst_user
+(no output)
+
+toor@ip-172-31-10-188:~$ sudo passwd analyst_user
+New password:
+Retype new password:
+passwd: password updated successfully
+
+toor@ip-172-31-10-188:~$ sudo groupadd admin
+(no output)
+
+toor@ip-172-31-10-188:~$ sudo useradd -m -s /bin/bash -g admin admin_user
+(no output)
+
+toor@ip-172-31-10-188:~$ sudo passwd admin_user
+New password:
+Retype new password:
+passwd: password updated successfully
+
+toor@ip-172-31-10-188:~$ id analyst_user
+uid=1002(analyst_user) gid=1002(analyst) groups=1002(analyst)
+
+toor@ip-172-31-10-188:~$ id admin_user
+uid=1003(admin_user) gid=1003(admin) groups=1003(admin)
+
+
+------------------------------------------------------------
+Task 3: Implement Access Controls
+------------------------------------------------------------
+
+toor@ip-172-31-10-188:~$ sudo mkdir /var/restricted
+(no output)
+
+toor@ip-172-31-10-188:~$ sudo chown root:analyst /var/restricted
+(no output)
+
+toor@ip-172-31-10-188:~$ sudo chmod 750 /var/restricted
+(no output)
+
+toor@ip-172-31-10-188:~$ ls -ld /var/restricted
+drwxr-x--- 2 root analyst 4096 Aug 18 12:44 /var/restricted
+
+toor@ip-172-31-10-188:~$ su - analyst_user
+$
+
+analyst_user@ip-172-31-10-188:~$ echo "Test" > /var/restricted/test_file.txt
+-bash: /var/restricted/test_file.txt: Permission denied
+
+analyst_user@ip-172-31-10-188:~$ exit
+logout
+toor@ip-172-31-10-188:~$
+
+
+------------------------------------------------------------
+Grant Full Access to "Admin" Role
+------------------------------------------------------------
+
+toor@ip-172-31-10-188:~$ sudo chown admin_user:admin /var/restricted
+(no output)
+
+toor@ip-172-31-10-188:~$ sudo chmod 770 /var/restricted
+(no output)
+
+toor@ip-172-31-10-188:~$ ls -ld /var/restricted
+drwxrwx--- 2 admin_user admin 4096 Aug 18 12:44 /var/restricted
+
+
+------------------------------------------------------------
+Task 4: Test Role Switching and Access
+------------------------------------------------------------
+
+toor@ip-172-31-10-188:~$ su - admin_user
+$
+
+admin_user@ip-172-31-10-188:~$ echo "Admin Test" > /var/restricted/admin_test.txt
+(no output)
+
+admin_user@ip-172-31-10-188:~$ ls -l /var/restricted
+total 4
+-rw-r--r-- 1 admin_user admin 11 Aug 18 12:46 admin_test.txt
+
+admin_user@ip-172-31-10-188:~$ exit
+logout
+toor@ip-172-31-10-188:~$
+
+
+------------------------------------------------------------
+Analyst read test (before ACL) - expected denied
+------------------------------------------------------------
+
+toor@ip-172-31-10-188:~$ su - analyst_user
+$
+
+analyst_user@ip-172-31-10-188:~$ cat /var/restricted/admin_test.txt
+cat: /var/restricted/admin_test.txt: Permission denied
+
+analyst_user@ip-172-31-10-188:~$ exit
+logout
+toor@ip-172-31-10-188:~$
+
+
+------------------------------------------------------------
+RBAC adjustment using ACLs
+------------------------------------------------------------
+
+toor@ip-172-31-10-188:~$ sudo apt install acl -y
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following NEW packages will be installed:
+  acl
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get 42.8 kB of archives.
+After this operation, 174 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble/main amd64 acl amd64 2.3.2-1build1 [42.8 kB]
+Fetched 42.8 kB in 0s (161 kB/s)
+Selecting previously unselected package acl.
+Preparing to unpack .../acl_2.3.2-1build1_amd64.deb ...
+Unpacking acl (2.3.2-1build1) ...
+Setting up acl (2.3.2-1build1) ...
+
+toor@ip-172-31-10-188:~$ sudo setfacl -m u:analyst_user:rx /var/restricted
+(no output)
+
+toor@ip-172-31-10-188:~$ sudo setfacl -m u:analyst_user:r /var/restricted/admin_test.txt
+(no output)
+
+toor@ip-172-31-10-188:~$ getfacl /var/restricted | head -n 12
+# file: var/restricted
+# owner: admin_user
+# group: admin
+user::rwx
+user:analyst_user:r-x
+group::rwx
+mask::rwx
+other::---
+
+
+------------------------------------------------------------
+Analyst re-test after ACL (read allowed, write denied)
+------------------------------------------------------------
+
+toor@ip-172-31-10-188:~$ su - analyst_user
+$
+
+analyst_user@ip-172-31-10-188:~$ cat /var/restricted/admin_test.txt
+Admin Test
+
+analyst_user@ip-172-31-10-188:~$ echo "Hacked" >> /var/restricted/admin_test.txt
+-bash: /var/restricted/admin_test.txt: Permission denied
+
+
+========================================
+Lab 20 Completed Successfully
+- RBAC roles created: analyst_user (analyst), admin_user (admin)
+- Access enforced using Linux permissions (chmod/chown)
+- Admin write access validated in /var/restricted
+- Analyst write denied validated
+- ACLs applied to grant analyst read-only access precisely
+- Analyst read allowed after ACL; modify still denied (least privilege enforced)
+========================================
