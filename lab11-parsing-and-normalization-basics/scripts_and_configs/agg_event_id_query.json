@@ -1,0 +1,11 @@
+{
+  "size": 0,
+  "aggs": {
+    "event_ids": {
+      "terms": {
+        "field": "event_id.keyword",
+        "size": 10
+      }
+    }
+  }
+}
