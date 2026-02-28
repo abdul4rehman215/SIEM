@@ -1,0 +1,5 @@
+# ---------------------------- Elasticsearch Output ----------------------------
+output.elasticsearch:
+  hosts: ["http://10.0.2.15:9200"]
+  username: "elastic"
+  password: "changeme"
