@@ -1,0 +1,24 @@
+# OSSEC Service Status (systemd)
+● ossec.service - OSSEC HIDS
+     Loaded: loaded (/etc/systemd/system/ossec.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-02-28 12:43:11 UTC; 1min 7s ago
+       Docs: https://www.ossec.net/
+   Main PID: 3187 (ossec-control)
+      Tasks: 6 (limit: 2200)
+     Memory: 19.6M
+        CPU: 1.152s
+     CGroup: /system.slice/ossec.service
+             ├─3196 /var/ossec/bin/ossec-analysisd
+             ├─3204 /var/ossec/bin/ossec-syscheckd
+             ├─3210 /var/ossec/bin/ossec-rootcheck
+             ├─3217 /var/ossec/bin/ossec-logcollector
+             └─3226 /var/ossec/bin/ossec-execd
+
+# OSSEC Component Status (/var/ossec/bin/ossec-control status)
+ossec-monitord is running...
+ossec-logcollector is running...
+ossec-syscheckd is running...
+ossec-analysisd is running...
+ossec-maild is running...
+ossec-execd is running...
+ossec-rootcheck is running...
