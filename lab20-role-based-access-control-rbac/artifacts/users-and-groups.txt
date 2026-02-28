@@ -1,0 +1,4 @@
+# Verify users and group membership
+
+uid=1002(analyst_user) gid=1002(analyst) groups=1002(analyst)
+uid=1003(admin_user) gid=1003(admin) groups=1003(admin)
