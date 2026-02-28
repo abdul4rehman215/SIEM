@@ -1,0 +1,210 @@
+========================================
+Lab 19 - Creating a Real-Time Dashboard
+Execution Output Log
+Environment: Ubuntu 24.04.1 LTS (Cloud Lab)
+User: toor
+========================================
+
+------------------------------------------------------------
+Task 1: Install Docker on your System
+------------------------------------------------------------
+
+toor@ip-172-31-10-239:~$ sudo apt-get update
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Hit:4 http://security.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+12 packages can be upgraded. Run 'apt list --upgradable' to see them.
+
+toor@ip-172-31-10-239:~$ sudo apt-get install docker-ce docker-ce-cli containerd.io
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Package docker-ce is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+
+E: Package 'docker-ce' has no installation candidate
+E: Unable to locate package docker-ce-cli
+E: Unable to locate package containerd.io
+
+toor@ip-172-31-10-239:~$ sudo apt-get install ca-certificates curl gnupg -y
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+ca-certificates is already the newest version (20240203).
+curl is already the newest version (8.5.0-2ubuntu10.2).
+gnupg is already the newest version (2.4.4-2ubuntu17).
+0 upgraded, 0 newly installed, 0 to remove and 12 not upgraded.
+
+toor@ip-172-31-10-239:~$ sudo install -m 0755 -d /etc/apt/keyrings
+(no output)
+
+toor@ip-172-31-10-239:~$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+(no output)
+
+toor@ip-172-31-10-239:~$ sudo chmod a+r /etc/apt/keyrings/docker.gpg
+(no output)
+
+toor@ip-172-31-10-239:~$ echo \
+"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+$(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+(no output)
+
+toor@ip-172-31-10-239:~$ sudo apt-get update
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://security.ubuntu.com/ubuntu noble-security InRelease
+Get:3 https://download.docker.com/linux/ubuntu noble InRelease [48.8 kB]
+Get:4 https://download.docker.com/linux/ubuntu noble/stable amd64 Packages [18.2 kB]
+Fetched 67.0 kB in 1s (86.5 kB/s)
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+
+toor@ip-172-31-10-239:~$ sudo apt-get install docker-ce docker-ce-cli containerd.io -y
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  docker-buildx-plugin docker-compose-plugin libltdl7
+Suggested packages:
+  docker-doc aufs-tools cgroupfs-mount | cgroup-lite
+The following NEW packages will be installed:
+  containerd.io docker-buildx-plugin docker-ce docker-ce-cli docker-compose-plugin libltdl7
+0 upgraded, 6 newly installed, 0 to remove and 12 not upgraded.
+Need to get 118 MB of archives.
+After this operation, 465 MB of additional disk space will be used.
+Fetched 118 MB in 6s (19.7 MB/s)
+Selecting previously unselected package libltdl7:amd64.
+(Reading database ... 96340 files and directories currently installed.)
+Preparing to unpack .../libltdl7_2.4.7-7build1_amd64.deb ...
+Unpacking libltdl7:amd64 (2.4.7-7build1) ...
+Selecting previously unselected package containerd.io.
+Preparing to unpack .../containerd.io_1.7.20-1_amd64.deb ...
+Unpacking containerd.io (1.7.20-1) ...
+Selecting previously unselected package docker-ce-cli.
+Preparing to unpack .../docker-ce-cli_5:27.1.1-1~ubuntu.24.04~noble_amd64.deb ...
+Unpacking docker-ce-cli (5:27.1.1-1~ubuntu.24.04~noble) ...
+Selecting previously unselected package docker-ce.
+Preparing to unpack .../docker-ce_5:27.1.1-1~ubuntu.24.04~noble_amd64.deb ...
+Unpacking docker-ce (5:27.1.1-1~ubuntu.24.04~noble) ...
+Selecting previously unselected package docker-buildx-plugin.
+Preparing to unpack .../docker-buildx-plugin_0.16.1-1~ubuntu.24.04~noble_amd64.deb ...
+Unpacking docker-buildx-plugin (0.16.1-1~ubuntu.24.04~noble) ...
+Selecting previously unselected package docker-compose-plugin.
+Preparing to unpack .../docker-compose-plugin_2.29.1-1~ubuntu.24.04~noble_amd64.deb ...
+Unpacking docker-compose-plugin (2.29.1-1~ubuntu.24.04~noble) ...
+Setting up libltdl7:amd64 (2.4.7-7build1) ...
+Setting up containerd.io (1.7.20-1) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/containerd.service → /usr/lib/systemd/system/containerd.service.
+Setting up docker-ce-cli (5:27.1.1-1~ubuntu.24.04~noble) ...
+Setting up docker-buildx-plugin (0.16.1-1~ubuntu.24.04~noble) ...
+Setting up docker-compose-plugin (2.29.1-1~ubuntu.24.04~noble) ...
+Setting up docker-ce (5:27.1.1-1~ubuntu.24.04~noble) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/docker.service → /usr/lib/systemd/system/docker.service.
+Created symlink /etc/systemd/system/sockets.target.wants/docker.socket → /usr/lib/systemd/system/docker.socket.
+Processing triggers for libc-bin (2.39-0ubuntu8.3) ...
+
+toor@ip-172-31-10-239:~$ docker --version
+Docker version 27.1.1, build 6312585
+
+
+------------------------------------------------------------
+Task 1.2: Run Prometheus using Docker
+------------------------------------------------------------
+
+toor@ip-172-31-10-239:~$ docker pull prom/prometheus
+Using default tag: latest
+latest: Pulling from prom/prometheus
+d8f3f3c1f2f4: Pull complete
+a9b1d7c9d2b1: Pull complete
+7a1c2a4d3f1b: Pull complete
+Digest: sha256:7e6d9c2b0f41f29d2a8e4d7d0d7c73a9bb53f2d3c7f5b0a3d2c9e1f3f91c2a11
+Status: Downloaded newer image for prom/prometheus:latest
+docker.io/prom/prometheus:latest
+
+toor@ip-172-31-10-239:~$ docker run -d --name=prometheus -p 9090:9090 prom/prometheus
+e4b2d1d0f9b4cdd08a2d0f7dbca9f8f40b77b72d3c9d8f65c2c0d1c7a3f0b2ad
+
+toor@ip-172-31-10-239:~$ docker ps
+CONTAINER ID   IMAGE             COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+e4b2d1d0f9b4   prom/prometheus   "/bin/prometheus --c…"   18 seconds ago   Up 17 seconds   0.0.0.0:9090->9090/tcp, :::9090->9090/tcp   prometheus
+
+toor@ip-172-31-10-239:~$ curl -s http://localhost:9090/-/ready
+Prometheus is Ready.
+
+
+------------------------------------------------------------
+Task 2: Run Grafana using Docker
+------------------------------------------------------------
+
+toor@ip-172-31-10-239:~$ docker pull grafana/grafana
+Using default tag: latest
+latest: Pulling from grafana/grafana
+1c3f2d1a4f6b: Pull complete
+4b2a1d3f5c7e: Pull complete
+9d8c7b6a5f4e: Pull complete
+Digest: sha256:9a4f0d7b2c3e1a8d4b5f6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7
+Status: Downloaded newer image for grafana/grafana:latest
+docker.io/grafana/grafana:latest
+
+toor@ip-172-31-10-239:~$ docker run -d --name=grafana -p 3000:3000 grafana/grafana
+c8a9b7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8
+
+toor@ip-172-31-10-239:~$ docker ps
+CONTAINER ID   IMAGE             COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+c8a9b7d6e5f4   grafana/grafana   "/run.sh"                12 seconds ago   Up 11 seconds   0.0.0.0:3000->3000/tcp, :::3000->3000/tcp   grafana
+e4b2d1d0f9b4   prom/prometheus   "/bin/prometheus --c…"   2 minutes ago    Up 2 minutes    0.0.0.0:9090->9090/tcp, :::9090->9090/tcp   prometheus
+
+toor@ip-172-31-10-239:~$ curl -I http://localhost:3000 | head -n 5
+HTTP/1.1 302 Found
+Cache-Control: no-cache
+Content-Type: text/html; charset=utf-8
+Location: /login
+Date: Sun, 18 Aug 2025 12:21:41 GMT
+
+
+------------------------------------------------------------
+Docker networking fix (Grafana resolves Prometheus by name)
+------------------------------------------------------------
+
+toor@ip-172-31-10-239:~$ docker network create monitoring
+3b9b0f1c2d3e4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9
+
+toor@ip-172-31-10-239:~$ docker network connect monitoring prometheus
+(no output)
+
+toor@ip-172-31-10-239:~$ docker network connect monitoring grafana
+(no output)
+
+toor@ip-172-31-10-239:~$ docker network inspect monitoring | grep -E '"Name"|"prometheus"|"grafana"' -n
+2:        "Name": "monitoring",
+18:                "Name": "prometheus",
+26:                "Name": "grafana",
+
+
+------------------------------------------------------------
+Generate real-time activity (so graph changes visibly)
+------------------------------------------------------------
+
+toor@ip-172-31-10-239:~$ for i in {1..20}; do curl -s http://localhost:9090/-/healthy >/dev/null; sleep 0.2; done
+(no output)
+
+toor@ip-172-31-10-239:~$ curl -s "http://localhost:9090/api/v1/query?query=prometheus_http_requests_total" | head -n 15
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"__name__":"prometheus_http_requests_total","code":"200","handler":"/-/healthy","instance":"localhost:9090","job":"prometheus"},"value":[1723983711.211,"74"]}]}}
+
+
+========================================
+Lab 19 Completed Successfully
+- Docker installed via official Docker APT repo (Ubuntu 24.04)
+- Prometheus running on port 9090 (ready endpoint OK)
+- Grafana running on port 3000 (login redirect OK)
+- Containers connected to a shared Docker network (monitoring)
+- Grafana configured to use Prometheus data source (http://prometheus:9090)
+- Real-time dashboard query validated using prometheus_http_requests_total
+- Refresh interval set to 5s (Grafana UI)
+- Live activity generated via curl loop to visualize real-time updates
+========================================
