@@ -1,0 +1,13 @@
+# OpenWrt UCI syslog forwarding configuration
+uci set system.@system[0].log_ip='10.0.2.15'
+uci set system.@system[0].log_port='514'
+uci set system.@system[0].log_proto='udp'
+uci commit system
+
+# Increase verbosity (debug-like)
+uci set system.@system[0].conloglevel='8'
+uci set system.@system[0].cronloglevel='8'
+uci commit system
+
+# Restart logging service
+/etc/init.d/log restart
