@@ -1,0 +1,8 @@
+# Cron-style file retention example (as referenced by the lab)
+# Deletes files older than 30 days
+
+0 0 * * * find /path/to/logs* -mtime +30 -exec rm {} \;
+
+# Lab-safe simulation used:
+# - Create files with modified times (one older than 30 days)
+# - Run find with -mtime +30 and rm -v to confirm only old logs are removed
