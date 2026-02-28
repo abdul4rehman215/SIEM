@@ -1,0 +1,15 @@
+# Analyst write test (expected denied)
+-bash: /var/restricted/test_file.txt: Permission denied
+
+# Admin write test (expected success)
+total 4
+-rw-r--r-- 1 admin_user admin 11 Aug 18 12:46 admin_test.txt
+
+# Analyst read test BEFORE ACL (expected denied)
+cat: /var/restricted/admin_test.txt: Permission denied
+
+# Analyst read test AFTER ACL (expected allowed)
+Admin Test
+
+# Analyst write/append test AFTER ACL (expected denied)
+-bash: /var/restricted/admin_test.txt: Permission denied
