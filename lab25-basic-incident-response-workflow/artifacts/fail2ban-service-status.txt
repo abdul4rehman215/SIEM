@@ -1,0 +1,7 @@
+● fail2ban.service - Fail2Ban Service
+     Loaded: loaded (/usr/lib/systemd/system/fail2ban.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-02-28 13:22:51 IST; 8s ago
+       Docs: man:fail2ban(1)
+   Main PID: 26341 (fail2ban-server)
+      Tasks: 3 (limit: 2207)
+     Memory: 13.6M
