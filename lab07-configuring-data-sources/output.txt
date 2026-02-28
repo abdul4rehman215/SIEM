@@ -1,0 +1,81 @@
+# (no output)
+
+2: ens5: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9001 qdisc fq_codel state UP group default qlen 1000
+    link/ether 02:8f:2a:41:6c:3d brd ff:ff:ff:ff:ff:ff
+    inet 172.31.10.232/20 brd 172.31.15.255 scope global dynamic ens5
+       valid_lft 3202sec preferred_lft 3202sec
+    inet6 fe80::8f:2aff:fe41:6c3d/64 scope link
+       valid_lft forever preferred_lft forever
+
+# (nano editor opened)
+
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Hit:4 http://security.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  libivykis0 libjson-c5
+The following NEW packages will be installed:
+  libivykis0 libjson-c5 syslog-ng
+0 upgraded, 3 newly installed, 0 to remove and 0 not upgraded.
+Need to get 2,684 kB of archives.
+After this operation, 9,812 kB of additional disk space will be used.
+Fetched 2,684 kB in 1s (2,780 kB/s)
+Selecting previously unselected package libivykis0:amd64.
+(Reading database ... 86410 files and directories currently installed.)
+Preparing to unpack .../libivykis0_0.42-1_amd64.deb ...
+Unpacking libivykis0:amd64 (0.42-1) ...
+Selecting previously unselected package syslog-ng.
+Preparing to unpack .../syslog-ng_4.3.1-2ubuntu1_amd64.deb ...
+Unpacking syslog-ng (4.3.1-2ubuntu1) ...
+Setting up libivykis0:amd64 (0.42-1) ...
+Setting up syslog-ng (4.3.1-2ubuntu1) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/syslog-ng.service → /lib/systemd/system/syslog-ng.service.
+Processing triggers for man-db (2.12.0-4build2) ...
+
+# (nano editor opened)
+
+# (no output)
+
+Synchronizing state of syslog-ng.service with SysV service script with /lib/systemd/systemd-sysv-install.
+Executing: /lib/systemd/systemd-sysv-install enable syslog-ng
+
+● syslog-ng.service - System Logger Daemon
+     Loaded: loaded (/lib/systemd/system/syslog-ng.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2025-08-18 14:03:21 UTC; 12s ago
+       Docs: man:syslog-ng(8)
+   Main PID: 19470 (syslog-ng)
+      Tasks: 2 (limit: 2234)
+     Memory: 5.6M
+        CPU: 78ms
+     CGroup: /system.slice/syslog-ng.service
+             └─19470 /usr/sbin/syslog-ng -F
+
+udp   UNCONN 0      0            0.0.0.0:514        0.0.0.0:*    users:(("syslog-ng",pid=19470,fd=12))
+tcp   LISTEN 0      128          0.0.0.0:514        0.0.0.0:*    users:(("syslog-ng",pid=19470,fd=13))
+
+# (nano editor opened)
+
+# (nano editor opened)
+
+# (no output)
+
+Aug 18 14:05:12 ip-172-31-10-232 syslog-ng[19470]: syslog-ng starting up; version='4.3.1'
+Aug 18 14:05:16 ip-172-31-10-232 systemd[1]: Started syslog-ng.service - System Logger Daemon.
+
+# (no output)
+
+# (no output)
+
+Aug 18 14:05:30 router01 firewall: DROP IN=eth0 OUT= MAC=aa:bb:cc:dd:ee:ff SRC=203.0.113.50 DST=192.168.1.10 LEN=60 TOS=0x00 PREC=0x00 TTL=50 ID=54321 DF PROTO=TCP SPT=443 DPT=53922 WINDOW=65535
+Aug 18 14:05:38 HOA-WIN10 Microsoft-Windows-Security-Auditing: EventID=4625 An account failed to log on. Account Name=hoa-admin Source Network Address=10.10.20.15 Logon Type=3
+
+Aug 18 14:05:12 ip-172-31-10-232 syslog-ng[19470]: syslog-ng starting up; version='4.3.1'
+Aug 18 14:05:16 ip-172-31-10-232 systemd[1]: Started syslog-ng.service - System Logger Daemon.
+Aug 18 14:05:30 router01 firewall: DROP IN=eth0 OUT= MAC=aa:bb:cc:dd:ee:ff SRC=203.0.113.50 DST=192.168.1.10 LEN=60 TOS=0x00 PREC=0x00 TTL=50 ID=54321 DF PROTO=TCP SPT=443 DPT=53922 WINDOW=65535
+Aug 18 14:05:38 HOA-WIN10 Microsoft-Windows-Security-Auditing: EventID=4625 An account failed to log on. Account Name=hoa-admin Source Network Address=10.10.20.15 Logon Type=3
+
+# (nano editor opened)
