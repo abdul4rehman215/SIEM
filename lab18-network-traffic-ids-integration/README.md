@@ -1,4 +1,4 @@
-# 🧪 Lab 18: Network Traffic & IDS Integration (Optional)
+# 🧪 Lab 18: Network Traffic & IDS Integration
 
 ## 🧾 Lab Summary
 This lab demonstrates how to deploy an **Intrusion Detection System (IDS)** to monitor network traffic and integrate IDS alerts into a **SIEM pipeline**. I installed **Snort**, enabled rule loading, validated Snort configuration in test mode, and then built a minimal **ELK (Elasticsearch, Logstash, Kibana)** ingestion path where Logstash reads Snort’s alert file and forwards events into Elasticsearch.
