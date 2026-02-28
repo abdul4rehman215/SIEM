@@ -1,0 +1,22 @@
+name: HTTP_404_Spike
+type: frequency
+index: inbound-logs*
+num_events: 3
+timeframe:
+  minutes: 5
+
+filter:
+- term:
+    event_type: "http"
+- query_string:
+    query: "message:*404* OR message:*wp-login.php* OR message:*robots.txt* OR message:*favicon.ico*"
+
+query_key: "source.ip"
+include:
+- "@timestamp"
+- "source.ip"
+- "destination.ip"
+- "message"
+
+alert:
+- "debug"
