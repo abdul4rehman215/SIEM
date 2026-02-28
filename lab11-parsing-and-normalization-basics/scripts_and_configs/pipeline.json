@@ -1,0 +1,19 @@
+{
+  "description": "Field Extraction for Log Data",
+  "processors": [
+    {
+      "date": {
+        "field": "timestamp",
+        "formats": ["ISO8601"],
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "ip_addr",
+        "target_field": "source_ip",
+        "ignore_missing": true
+      }
+    }
+  ]
+}
