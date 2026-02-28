@@ -1,0 +1,10 @@
+{ "index": {} }
+{ "@timestamp":"2026-02-28T06:10:00Z","severity":"info","source":{"ip":"192.168.0.10"},"message":"User login success" }
+{ "index": {} }
+{ "@timestamp":"2026-02-28T07:20:00Z","severity":"error","source":{"ip":"192.168.0.55"},"message":"Failed SSH login attempt" }
+{ "index": {} }
+{ "@timestamp":"2026-02-27T09:05:00Z","severity":"error","source":{"ip":"10.0.2.15"},"message":"Disk space low warning" }
+{ "index": {} }
+{ "@timestamp":"2026-02-28T08:42:00Z","severity":"warning","source":{"ip":"192.168.1.50"},"message":"Multiple HTTP 404 responses" }
+{ "index": {} }
+{ "@timestamp":"2026-02-28T09:15:00Z","severity":"error","source":{"ip":"192.168.0.99"},"message":"Application exception in auth module" }
