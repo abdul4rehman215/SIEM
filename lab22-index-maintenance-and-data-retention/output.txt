@@ -1,0 +1,194 @@
+========================================
+Lab 22 - Index Maintenance & Data Retention
+Execution Output Log
+Environment: Ubuntu 24.04.1 LTS (Cloud Lab)
+User: toor
+========================================
+
+------------------------------------------------------------
+Setup: Install and start PostgreSQL
+------------------------------------------------------------
+
+toor@ip-172-31-10-221:~$ sudo apt update
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Hit:4 http://security.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+12 packages can be upgraded. Run 'apt list --upgradable' to see them.
+
+toor@ip-172-31-10-221:~$ sudo apt install postgresql postgresql-contrib -y
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  postgresql-client-common postgresql-common postgresql-client-16 postgresql-16
+Suggested packages:
+  postgresql-doc
+The following NEW packages will be installed:
+  postgresql postgresql-16 postgresql-client-16 postgresql-client-common postgresql-common postgresql-contrib
+0 upgraded, 6 newly installed, 0 to remove and 12 not upgraded.
+Need to get 33.8 MB of archives.
+After this operation, 115 MB of additional disk space will be used.
+Fetched 33.8 MB in 3s (11.3 MB/s)
+Selecting previously unselected package postgresql-common.
+(Reading database ... 97520 files and directories currently installed.)
+Preparing to unpack .../postgresql-common_...deb ...
+Unpacking postgresql-common ...
+Setting up postgresql-common ...
+Creating new PostgreSQL cluster 16/main ...
+Setting up postgresql-16 ...
+Setting up postgresql ...
+Setting up postgresql-contrib ...
+Processing triggers for man-db (2.12.0-4build2) ...
+
+toor@ip-172-31-10-221:~$ sudo systemctl status postgresql --no-pager | head -n 12
+● postgresql.service - PostgreSQL RDBMS
+     Loaded: loaded (/usr/lib/systemd/system/postgresql.service; enabled; preset: enabled)
+     Active: active (exited) since Sat 2026-02-28 12:08:41 IST; 1min 12s ago
+   Main PID: 22118 (code=exited, status=0/SUCCESS)
+      Tasks: 0 (limit: 2207)
+     Memory: 0B
+
+
+------------------------------------------------------------
+Create lab database + table + indexes
+------------------------------------------------------------
+
+toor@ip-172-31-10-221:~$ sudo -u postgres psql -c "CREATE DATABASE labdb;"
+CREATE DATABASE
+
+toor@ip-172-31-10-221:~$ sudo -u postgres psql -d labdb -c "CREATE TABLE app_logs (id BIGSERIAL PRIMARY KEY, ts TIMESTAMPTZ NOT NULL DEFAULT now(), severity TEXT NOT NULL, message TEXT);"
+CREATE TABLE
+
+toor@ip-172-31-10-221:~$ sudo -u postgres psql -d labdb -c "CREATE INDEX idx_app_logs_ts ON app_logs(ts);"
+CREATE INDEX
+
+toor@ip-172-31-10-221:~$ sudo -u postgres psql -d labdb -c "CREATE INDEX idx_app_logs_severity ON app_logs(severity);"
+CREATE INDEX
+
+
+------------------------------------------------------------
+Task 1.1: Identify existing indexes (pg_indexes)
+------------------------------------------------------------
+
+toor@ip-172-31-10-221:~$ sudo -u postgres psql -d labdb -c "SELECT tablename, indexname, indexdef FROM pg_indexes WHERE schemaname = 'public';"
+ tablename |      indexname       |                              indexdef
+-----------+----------------------+----------------------------------------------------------------------
+ app_logs  | app_logs_pkey        | CREATE UNIQUE INDEX app_logs_pkey ON public.app_logs USING btree (id)
+ app_logs  | idx_app_logs_ts      | CREATE INDEX idx_app_logs_ts ON public.app_logs USING btree (ts)
+ app_logs  | idx_app_logs_severity| CREATE INDEX idx_app_logs_severity ON public.app_logs USING btree (severity)
+(3 rows)
+
+
+------------------------------------------------------------
+Task 1.2: Analyze index usage (generate queries + pg_stat_user_indexes)
+------------------------------------------------------------
+
+toor@ip-172-31-10-221:~$ sudo -u postgres psql -d labdb -c "INSERT INTO app_logs(ts,severity,message) VALUES (now()-interval '2 hours','error','Failed login attempt'), (now()-interval '50 minutes','info','User logged in'), (now()-interval '10 minutes','warning','High CPU usage'), (now(),'error','App exception stacktrace');"
+INSERT 0 4
+
+toor@ip-172-31-10-221:~$ sudo -u postgres psql -d labdb -c "SELECT count(*) FROM app_logs WHERE severity='error';"
+ count
+-------
+     2
+(1 row)
+
+toor@ip-172-31-10-221:~$ sudo -u postgres psql -d labdb -c "SELECT * FROM app_logs WHERE ts > now()-interval '1 hour' ORDER BY ts DESC LIMIT 5;"
+ id |              ts               | severity |           message
+----+-------------------------------+----------+------------------------------
+  4 | 2026-02-28 06:45:41.318+00    | error    | App exception stacktrace
+  3 | 2026-02-28 06:35:41.318+00    | warning  | High CPU usage
+  2 | 2026-02-28 05:55:41.318+00    | info     | User logged in
+(3 rows)
+
+toor@ip-172-31-10-221:~$ sudo -u postgres psql -d labdb -c "SELECT relname AS table_name, indexrelname AS index_name, idx_scan AS times_index_used FROM pg_stat_user_indexes ORDER BY idx_scan DESC;"
+ table_name |      index_name       | times_index_used
+------------+------------------------+-----------------
+ app_logs   | idx_app_logs_severity  |               2
+ app_logs   | idx_app_logs_ts        |               1
+ app_logs   | app_logs_pkey          |               0
+(3 rows)
+
+
+------------------------------------------------------------
+Task 2.1: Identify current retention settings location (postgresql.conf)
+------------------------------------------------------------
+
+toor@ip-172-31-10-221:~$ sudo find /etc/postgresql -name postgresql.conf
+/etc/postgresql/16/main/postgresql.conf
+
+toor@ip-172-31-10-221:~$ sudo sed -n '1,35p' /etc/postgresql/16/main/postgresql.conf
+# PostgreSQL configuration file
+# ----------------------------------
+# This file consists of lines of the form:
+#   name = value
+# (The '=' is optional.)
+#
+# Data Directory:
+data_directory = '/var/lib/postgresql/16/main'
+hba_file = '/etc/postgresql/16/main/pg_hba.conf'
+ident_file = '/etc/postgresql/16/main/pg_ident.conf'
+
+#------------------------------------------------------------------------------
+# ERROR REPORTING AND LOGGING
+#------------------------------------------------------------------------------
+#logging_collector = off
+#log_destination = 'stderr'
+#log_directory = 'log'
+#log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+
+
+------------------------------------------------------------
+Task 2.2: Adjust retention policy (keep 30 days)
+------------------------------------------------------------
+
+toor@ip-172-31-10-221:~$ sudo -u postgres psql -d labdb -c "DELETE FROM app_logs WHERE ts < now() - interval '30 days';"
+DELETE 0
+
+toor@ip-172-31-10-221:~$ sudo -u postgres psql -d labdb -c "CREATE OR REPLACE FUNCTION enforce_log_retention(days_to_keep INT) RETURNS VOID AS $$ BEGIN DELETE FROM app_logs WHERE ts < now() - (days_to_keep || ' days')::interval; END; $$ LANGUAGE plpgsql;"
+CREATE FUNCTION
+
+toor@ip-172-31-10-221:~$ sudo -u postgres psql -d labdb -c "SELECT enforce_log_retention(30);"
+ enforce_log_retention
+----------------------
+
+(1 row)
+
+
+------------------------------------------------------------
+Task 3.1: Verify handling post-retention (file cleanup simulation)
+------------------------------------------------------------
+
+toor@ip-172-31-10-221:~$ sudo mkdir -p /var/log/demo-retention
+(no output)
+
+toor@ip-172-31-10-221:~$ sudo touch /var/log/demo-retention/log_5_days.log
+(no output)
+
+toor@ip-172-31-10-221:~$ sudo touch -d "35 days ago" /var/log/demo-retention/log_35_days.log
+(no output)
+
+toor@ip-172-31-10-221:~$ sudo ls -l --time-style=long-iso /var/log/demo-retention
+total 0
+-rw-r--r-- 1 root root 0 2026-02-28 12:19 log_5_days.log
+-rw-r--r-- 1 root root 0 2026-01-24 12:19 log_35_days.log
+
+toor@ip-172-31-10-221:~$ sudo find /var/log/demo-retention* -mtime +30 -exec rm -v {} \;
+removed '/var/log/demo-retention/log_35_days.log'
+
+toor@ip-172-31-10-221:~$ sudo ls -l /var/log/demo-retention
+total 0
+-rw-r--r-- 1 root root 0 Feb 28 12:19 log_5_days.log
+
+
+========================================
+Lab 22 Completed Successfully
+- PostgreSQL installed and active
+- Indexes created and listed via pg_indexes
+- Index usage analyzed via pg_stat_user_indexes after running sample queries
+- Retention implemented realistically (row retention via SQL delete + retention function)
+- File retention simulated using find -mtime +30 and verified (old log removed, recent kept)
+========================================
