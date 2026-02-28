@@ -1,0 +1,18 @@
+# configs/prometheus.yml.permissions.note
+
+Issue observed:
+- Prometheus failed to start because it could not read its config:
+  /etc/prometheus/prometheus.yml (permission denied)
+
+Before fix:
+- Owner: root:root
+- Permissions: 600 (rw-------)
+
+Fix applied:
+- Changed group ownership so prometheus service user can read:
+  sudo chown root:prometheus /etc/prometheus/prometheus.yml
+- Updated permissions to allow group read:
+  sudo chmod 640 /etc/prometheus/prometheus.yml
+
+Result:
+- Prometheus restarted successfully and remained active (running).
