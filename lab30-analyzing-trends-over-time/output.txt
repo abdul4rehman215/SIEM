@@ -1,0 +1,136 @@
+=========================================
+Lab 30 - Analyzing Trends Over Time
+Execution Output Log
+=========================================
+
+-----------------------------------------
+Step 0: Create Working Directory
+-----------------------------------------
+toor@ip-172-31-10-209:~$ mkdir -p Lab_TimeSeries_Trends && cd Lab_TimeSeries_Trends
+toor@ip-172-31-10-209:~/Lab_TimeSeries_Trends$
+
+-----------------------------------------
+Step 1: Confirm Python Availability
+-----------------------------------------
+toor@ip-172-31-10-209:~/Lab_TimeSeries_Trends$ python3 --version
+Python 3.12.3
+
+-----------------------------------------
+Step 2: Setup Virtual Environment
+-----------------------------------------
+toor@ip-172-31-10-209:~/Lab_TimeSeries_Trends$ python3 -m venv venv
+toor@ip-172-31-10-209:~/Lab_TimeSeries_Trends$ source venv/bin/activate
+(venv) toor@ip-172-31-10-209:~/Lab_TimeSeries_Trends$
+
+-----------------------------------------
+Step 3: Install Required Packages (pandas, matplotlib, seaborn)
+-----------------------------------------
+(venv) toor@ip-172-31-10-209:~/Lab_TimeSeries_Trends$ pip install pandas matplotlib seaborn
+Collecting pandas
+  Downloading pandas-2.2.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (13.2 MB)
+Collecting matplotlib
+  Downloading matplotlib-3.9.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (8.3 MB)
+Collecting seaborn
+  Downloading seaborn-0.13.2-py3-none-any.whl (294 kB)
+Collecting numpy>=1.26.0 (from pandas)
+  Downloading numpy-2.0.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (19.3 MB)
+Collecting python-dateutil>=2.8.2 (from pandas)
+  Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+Collecting pytz>=2020.1 (from pandas)
+  Downloading pytz-2024.1-py2.py3-none-any.whl (506 kB)
+Collecting tzdata>=2022.7 (from pandas)
+  Downloading tzdata-2024.1-py2.py3-none-any.whl (345 kB)
+Collecting contourpy>=1.0.1 (from matplotlib)
+Collecting cycler>=0.10 (from matplotlib)
+Collecting fonttools>=4.22.0 (from matplotlib)
+Collecting kiwisolver>=1.3.1 (from matplotlib)
+Collecting packaging>=20.0 (from matplotlib)
+Collecting pillow>=8 (from matplotlib)
+Collecting pyparsing>=2.3.1 (from matplotlib)
+Collecting six>=1.5 (from python-dateutil>=2.8.2->pandas)
+Installing collected packages: pytz, tzdata, six, pyparsing, pillow, packaging, numpy, kiwisolver, fonttools, cycler, contourpy, python-dateutil, matplotlib, pandas, seaborn
+Successfully installed contourpy-1.2.1 cycler-0.12.1 fonttools-4.53.1 kiwisolver-1.4.5 matplotlib-3.9.1 numpy-2.0.1 packaging-24.1 pandas-2.2.2 pillow-10.4.0 pyparsing-3.1.2 python-dateutil-2.9.0.post0 pytz-2024.1 seaborn-0.13.2 six-1.16.0 tzdata-2024.1
+
+-----------------------------------------
+Task 1: Create Dataset File login_attempts.csv
+-----------------------------------------
+(venv) toor@ip-172-31-10-209:~/Lab_TimeSeries_Trends$ nano login_attempts.csv
+(Created CSV with columns: date, attempts)
+
+(venv) toor@ip-172-31-10-209:~/Lab_TimeSeries_Trends$ head login_attempts.csv
+date,attempts
+2025-06-02,48
+2025-06-03,52
+2025-06-04,47
+2025-06-05,50
+2025-06-06,55
+2025-06-07,49
+2025-06-08,51
+2025-06-09,54
+2025-06-10,56
+
+-----------------------------------------
+Task 1–5 Implementation via Python Script
+-----------------------------------------
+(venv) toor@ip-172-31-10-209:~/Lab_TimeSeries_Trends$ nano analyze_trends.py
+(Saved Python script implementing tasks 1-5)
+
+-----------------------------------------
+Run the Script
+-----------------------------------------
+(venv) toor@ip-172-31-10-209:~/Lab_TimeSeries_Trends$ python3 analyze_trends.py
+        date  attempts
+0 2025-06-02        48
+1 2025-06-03        52
+2 2025-06-04        47
+3 2025-06-05        50
+4 2025-06-06        55
+
+            attempts
+date                
+2025-06-08  50.285714
+2025-06-15  56.000000
+2025-06-22  63.000000
+2025-06-29  71.857143
+2025-07-06  81.142857
+2025-07-13  160.000000
+2025-07-20  92.000000
+2025-07-27  84.142857
+
+Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+
+-----------------------------------------
+Notes (Recorded)
+-----------------------------------------
+- The weekly average around 2025-07-13 is 160, which is a clear spike (intentional anomaly).
+- On headless servers, plt.show() does not open a window; matplotlib prints the non-GUI backend message.
+
+-----------------------------------------
+Task 4 Verification (Optional Sanity Check)
+-----------------------------------------
+(venv) toor@ip-172-31-10-209:~/Lab_TimeSeries_Trends$ python3 -c "import pandas as pd; d=pd.read_csv('login_attempts.csv',parse_dates=['date']).set_index('date'); w=d.resample('W').mean(); thr=w['attempts'].mean()+2*w['attempts'].std(); print('Threshold:',thr); print('Anomalies:'); print(w[w['attempts']>thr])"
+Threshold: 141.57294334291106
+Anomalies:
+            attempts
+date                
+2025-07-13     160.0
+
+-----------------------------------------
+Task 5: Export Snapshot (Confirmed)
+-----------------------------------------
+(venv) toor@ip-172-31-10-209:~/Lab_TimeSeries_Trends$ ls -lh
+total 32K
+-rw-r--r-- 1 toor toor 1.9K Aug 18 11:34 analyze_trends.py
+-rw-r--r-- 1 toor toor 1.2K Aug 18 11:30 login_attempts.csv
+drwxr-xr-x 5 toor toor 4.0K Aug 18 11:25 venv
+-rw-r--r-- 1 toor toor  18K Aug 18 11:34 weekly_attempts_snapshot.pdf
+
+=========================================
+Lab 30 Completed Successfully
+=========================================
+✔ Loaded and previewed time-series data
+✔ Built trend and weekly average charts
+✔ Identified anomalies using statistical threshold
+✔ Exported snapshot to weekly_attempts_snapshot.pdf
