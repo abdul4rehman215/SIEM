@@ -1,0 +1,17 @@
+{
+  "hits_total": { "value": 2, "relation": "eq" },
+  "results": [
+    {
+      "@timestamp": "2026-02-28T09:15:00Z",
+      "severity": "error",
+      "source.ip": "192.168.0.99",
+      "message": "Application exception in auth module"
+    },
+    {
+      "@timestamp": "2026-02-28T07:20:00Z",
+      "severity": "error",
+      "source.ip": "192.168.0.55",
+      "message": "Failed SSH login attempt"
+    }
+  ]
+}
