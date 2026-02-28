@@ -1,0 +1,14 @@
+# Elastic Stack APT Repository Setup (Ubuntu 24.04)
+
+# Default Ubuntu repos do not include elasticsearch/logstash/kibana packages.
+# Fix: add the official Elastic 8.x APT repository.
+
+sudo apt install apt-transport-https ca-certificates curl gnupg -y
+curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elastic.gpg
+echo "deb [signed-by=/usr/share/keyrings/elastic.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
+sudo apt update
+
+# Install:
+sudo apt install elasticsearch
+sudo apt install logstash
+sudo apt install kibana
