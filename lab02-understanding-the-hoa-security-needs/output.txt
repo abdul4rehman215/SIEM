@@ -1,0 +1,148 @@
+# (no output)
+# (no output)
+
+/home/toor/HOA_Security_Lab
+
+# (nano editor opened)
+
+# (nano editor opened)
+
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Hit:4 http://security.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+All packages are up to date.
+
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  squashfs-tools
+The following NEW packages will be installed:
+  snapd squashfs-tools
+0 upgraded, 2 newly installed, 0 to remove and 0 not upgraded.
+Need to get 28.6 MB of archives.
+After this operation, 116 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble/main amd64 squashfs-tools amd64 1:4.6.1-1 [260 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble/main amd64 snapd amd64 2.63+24.04 [28.3 MB]
+Fetched 28.6 MB in 2s (14.8 MB/s)
+Selecting previously unselected package squashfs-tools.
+(Reading database ... 76310 files and directories currently installed.)
+Preparing to unpack .../squashfs-tools_1%3a4.6.1-1_amd64.deb ...
+Unpacking squashfs-tools (1:4.6.1-1) ...
+Selecting previously unselected package snapd.
+Preparing to unpack .../snapd_2.63+24.04_amd64.deb ...
+Unpacking snapd (2.63+24.04) ...
+Setting up squashfs-tools (1:4.6.1-1) ...
+Setting up snapd (2.63+24.04) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/snapd.service → /usr/lib/systemd/system/snapd.service.
+Created symlink /etc/systemd/system/sockets.target.wants/snapd.socket → /usr/lib/systemd/system/snapd.socket.
+Processing triggers for man-db (2.12.0-4build2) ...
+
+# (no output)
+
+threat-dragon 2.3.0 from OWASP✓ installed
+
+threat-dragon    2.3.0   47   latest/stable   owasp✓   -
+
+# (nano editor opened)
+
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Package openvas is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+
+E: Package 'openvas' has no installation candidate
+
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  redis-server postgresql
+The following NEW packages will be installed:
+  gvm postgresql redis-server
+0 upgraded, 3 newly installed, 0 to remove and 0 not upgraded.
+Need to get 92.4 MB of archives.
+After this operation, 420 MB of additional disk space will be used.
+Fetched 92.4 MB in 5s (17.3 MB/s)
+Selecting previously unselected package postgresql.
+(Reading database ... 78940 files and directories currently installed.)
+Preparing to unpack .../postgresql_16+257_all.deb ...
+Unpacking postgresql (16+257) ...
+Selecting previously unselected package redis-server.
+Preparing to unpack .../redis-server_5%3a7.0.15-1ubuntu2_amd64.deb ...
+Unpacking redis-server (5:7.0.15-1ubuntu2) ...
+Selecting previously unselected package gvm.
+Preparing to unpack .../gvm_23.0.1-1_all.deb ...
+Unpacking gvm (23.0.1-1) ...
+Setting up postgresql (16+257) ...
+Setting up redis-server (5:7.0.15-1ubuntu2) ...
+Setting up gvm (23.0.1-1) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+
+Syncing NVTs...
+Downloading from rsync://feed.community.greenbone.net:/nvt-feed ...
+Receiving file list ... done
+./
+sha256sums.asc
+sha256sums
+nvt-feed-20250818.tar.xz
+received 122,901,442 bytes  9,872,110.23 bytes/sec
+total size is 122,901,442  speedup is 1.00
+Verifying signature... OK
+Extracting feed... OK
+Syncing SCAP...
+SCAP data synced successfully.
+Syncing CERT...
+CERT data synced successfully.
+
+[>] Starting GVM setup...
+[>] Checking system requirements... OK
+[>] Creating PostgreSQL database... OK
+[>] Creating admin user... OK
+[>] Generating certificates... OK
+[>] Updating scanner and manager configurations... OK
+[>] Synchronizing feeds... OK
+[>] Starting services... OK
+
+[*] NOTE: The GVM services have been configured.
+[*] User: admin
+[*] Password: 7f4c2a1e-9b73-4b7d-a8d1-2d6c6f1dbe21
+
+[+] GVM setup completed successfully.
+
+gvm-check-setup 23.0.1
+Step 1: Checking OpenVAS Scanner ... OK
+Step 2: Checking GVM Manager ... OK
+Step 3: Checking Greenbone Security Assistant (GSA) ... OK
+Step 4: Checking PostgreSQL ... OK
+Step 5: Checking Redis ... OK
+Step 6: Checking Feed Import ... OK
+
+It seems like your GVM-23.0.1 installation is OK.
+
+# (nano editor opened)
+
+# (nano editor opened)
+
+# (nano editor opened)
+
+.
+├── assets
+│   └── hoa_assets.md
+├── data_classification
+│   └── data_types.md
+├── security_policy
+│   ├── hoa_security_policy.md
+│   └── security_goals.md
+├── threat_modeling
+│   └── threats_notes.md
+└── vulnerability_assessment
+    └── vuln_assessment_notes.md
+
+6 directories, 5 files
