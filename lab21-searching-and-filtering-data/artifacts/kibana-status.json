@@ -1,0 +1,16 @@
+{
+  "name": "ip-172-31-10-206",
+  "uuid": "c7bba0d4-0d4b-4b7d-9f58-2a2bd63a1d1a",
+  "version": {
+    "number": "8.13.4",
+    "build_hash": "c9f8b8d3c0c7c2a...",
+    "build_number": 73311,
+    "build_snapshot": false
+  },
+  "status": {
+    "overall": {
+      "level": "available",
+      "summary": "All services are available"
+    }
+  }
+}
