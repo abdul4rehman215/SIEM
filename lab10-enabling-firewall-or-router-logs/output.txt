@@ -1,0 +1,57 @@
+The authenticity of host '192.168.1.1 (192.168.1.1)' can't be established.
+ED25519 key fingerprint is SHA256:0qkzXn8aV8xq9rJqYj1w6G3o0xK7v3+zJHqz8jzK2N4.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '192.168.1.1' (ED25519) to the list of known hosts.
+admin@192.168.1.1's password:
+(Password entered — not shown)
+
+Welcome to OpenWrt 23.05.2 (r23630-842932a63d)
+ -----------------------------------------------------
+  * Documentation: https://openwrt.org/docs/start
+  * Bug reports:   https://bugs.openwrt.org/
+ -----------------------------------------------------
+root@OpenWrt:~#
+
+  742 root      1236 S    /sbin/logd -S 64
+  801 root      1148 S    /sbin/netifd
+ 1244 root      1100 S    grep -E logd|syslog
+
+system.@system[0].log_size='64'
+system.@system[0].log_ip=''
+system.@system[0].log_port='514'
+system.@system[0].log_proto='udp'
+system.@system[0].conloglevel='8'
+system.@system[0].cronloglevel='5'
+
+Stopping logd... ok
+Starting logd... ok
+
+system.@system[0].log_ip='10.0.2.15'
+system.@system[0].log_port='514'
+system.@system[0].log_proto='udp'
+system.@system[0].conloglevel='8'
+system.@system[0].cronloglevel='8'
+
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP qlen 1000
+    link/ether 02:1a:6b:4c:7d:10 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic eth0
+       valid_lft 3575sec preferred_lft 3575sec
+    inet6 fe80::1a:6bff:fe4c:7d10/64 scope link
+       valid_lft forever preferred_lft forever
+
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), capture size 262144 bytes
+21:41:05.112983 IP 192.168.1.1.59244 > 10.0.2.15.514: SYSLOG local0.notice, length: 198
+21:41:07.398201 IP 192.168.1.1.59244 > 10.0.2.15.514: SYSLOG local0.notice, length: 214
+21:41:10.774902 IP 192.168.1.1.59244 > 10.0.2.15.514: SYSLOG local0.notice, length: 183
+(Stopped capture with CTRL+C)
+^C
+3 packets captured
+3 packets received by filter
+0 packets dropped by kernel
+
+Feb 28 21:41:05 siem-centos rsyslogd: imudp: message from 192.168.1.1 port 59244
+Feb 28 21:41:07 siem-centos rsyslogd: imudp: message from 192.168.1.1 port 59244
+Feb 28 21:41:10 siem-centos rsyslogd: imudp: message from 192.168.1.1 port 59244
+Feb 28 21:41:18 OpenWrt user.notice local0.notice Firewall/Router syslog test from OpenWrt
