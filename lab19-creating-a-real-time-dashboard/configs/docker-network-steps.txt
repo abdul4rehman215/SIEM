@@ -1,0 +1,19 @@
+# Docker Networking Notes (Grafana ↔ Prometheus connectivity)
+
+# The lab suggests using Prometheus URL:
+#   http://prometheus:9090
+# This hostname resolution works reliably when both containers share a user-defined network.
+
+# Create user-defined bridge network:
+docker network create monitoring
+
+# Attach containers to the network:
+docker network connect monitoring prometheus
+docker network connect monitoring grafana
+
+# Verify both containers are on the same network:
+docker network inspect monitoring | grep -E '"Name"|"prometheus"|"grafana"' -n
+
+# Result:
+# Grafana can resolve "prometheus" and connect to Prometheus at:
+#   http://prometheus:9090
