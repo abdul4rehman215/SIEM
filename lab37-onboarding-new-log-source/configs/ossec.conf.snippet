@@ -1,0 +1,15 @@
+<!-- configs/ossec.conf.snippet -->
+<!-- Only the relevant configuration changes applied in this lab -->
+
+<localfile>
+  <log_format>json</log_format>
+  <location>/var/log/iot_device/iot_events.log</location>
+</localfile>
+
+<client>
+  <server>
+    <address>192.168.56.10</address>
+    <port>1514</port>
+    <protocol>tcp</protocol>
+  </server>
+</client>
