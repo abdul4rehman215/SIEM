@@ -1,0 +1,19 @@
+# rules/auto-block-rule.yaml
+---
+name: auto_block_on_portscan
+pack: default
+description: "SOAR Lite: Auto-block scanning IP using iptables when port-scan alert is detected."
+enabled: true
+
+trigger:
+  type: core.st2.generic.notifytrigger
+
+criteria:
+  trigger.payload.alert_type:
+    type: equals
+    pattern: "PORTSCAN_DETECTED"
+
+action:
+  ref: core.local
+  parameters:
+    cmd: "/home/toor/Lab36_SOAR_Lite/auto_block.sh {{trigger.payload.src_ip}}"
