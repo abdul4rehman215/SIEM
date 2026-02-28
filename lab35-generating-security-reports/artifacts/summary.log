@@ -1,0 +1,6 @@
+# artifacts/summary.log
+/opt/zeek/logs/current/reporter.log:2025-08-18-14-29-44 error: analyzer failed to parse packet (truncated)
+/opt/zeek/logs/current/reporter.log:2025-08-18-14-30-02 error: DNS parser: malformed response (ignored)
+/opt/zeek/logs/current/weird.log:1755523801.612345	error	146.70.0.1	-	-	-	-	-	-	weird_activity	weird: partial_connection
+/opt/zeek/logs/current/weird.log:1755523810.114221	error	146.70.0.1	-	-	-	-	-	-	weird_activity	weird: bad_TCP_checksum
+/opt/zeek/logs/current/weird.log:1755523832.882019	error	146.70.0.1	-	-	-	-	-	-	weird_activity	weird: SYN_with_data
