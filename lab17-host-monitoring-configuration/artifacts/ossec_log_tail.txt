@@ -1,0 +1,5 @@
+2026/02/28 12:49:28 ossec-analysisd: INFO: (6003): Monitoring daemon started.
+2026/02/28 12:49:29 ossec-syscheckd: INFO: Starting syscheck scan.
+2026/02/28 12:49:30 ossec-syscheckd: INFO: Syscheck scan completed.
+2026/02/28 12:49:31 ossec-rootcheck: INFO: Rootcheck started.
+2026/02/28 12:49:32 ossec-rootcheck: INFO: Rootcheck completed.
