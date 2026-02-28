@@ -1,0 +1,339 @@
+=========================================
+Lab 32 - Setting Up UEBA (Optional) using ELK + Beats
+Execution Output Log
+=========================================
+
+-----------------------------------------
+Environment check (Ubuntu 24.04.1 LTS)
+-----------------------------------------
+toor@ip-172-31-10-232:~$ cat /etc/os-release
+PRETTY_NAME="Ubuntu 24.04.1 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.1 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+UBUNTU_CODENAME=noble
+
+-----------------------------------------
+Create Working Folder
+-----------------------------------------
+toor@ip-172-31-10-232:~$ mkdir -p Lab32_UEBA_ELK && cd Lab32_UEBA_ELK
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$
+
+-----------------------------------------
+Update packages
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo apt-get update
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+87 packages can be upgraded. Run 'apt list --upgradable' to see them.
+
+-----------------------------------------
+Ensure Java exists (lab prerequisite)
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ java -version
+openjdk version "21.0.2" 2024-01-16
+OpenJDK Runtime Environment (build 21.0.2+13-Ubuntu-1ubuntu124.04)
+OpenJDK 64-Bit Server VM (build 21.0.2+13-Ubuntu-1ubuntu124.04, mixed mode, sharing)
+
+-----------------------------------------
+Download Elasticsearch 7.15.2
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.15.2-amd64.deb
+--2025-08-18 12:41:10--  https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.15.2-amd64.deb
+Resolving artifacts.elastic.co (artifacts.elastic.co)... 34.120.127.130
+Connecting to artifacts.elastic.co (artifacts.elastic.co)|34.120.127.130|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 326987832 (312M) [application/octet-stream]
+Saving to: ‘elasticsearch-7.15.2-amd64.deb’
+
+elasticsearch-7.15.2-amd64.deb  100%[=================================================>] 312.0M  24.8MB/s    in 13s
+
+2025-08-18 12:41:23 (24.0 MB/s) - ‘elasticsearch-7.15.2-amd64.deb’ saved [326987832/326987832]
+
+-----------------------------------------
+Install Elasticsearch
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo dpkg -i elasticsearch-7.15.2-amd64.deb
+Selecting previously unselected package elasticsearch.
+(Reading database ... 98910 files and directories currently installed.)
+Preparing to unpack elasticsearch-7.15.2-amd64.deb ...
+Unpacking elasticsearch (7.15.2) ...
+Setting up elasticsearch (7.15.2) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/elasticsearch.service → /usr/lib/systemd/system/elasticsearch.service.
+### NOT starting on installation, please execute the following statements to configure elasticsearch service to start automatically using systemd
+ sudo systemctl daemon-reload
+ sudo systemctl enable elasticsearch.service
+### You can start elasticsearch service by executing
+ sudo systemctl start elasticsearch.service
+
+-----------------------------------------
+Start and enable Elasticsearch
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo systemctl start elasticsearch
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo systemctl enable elasticsearch
+Created symlink /etc/systemd/system/multi-user.target.wants/elasticsearch.service → /usr/lib/systemd/system/elasticsearch.service.
+
+-----------------------------------------
+Verify Elasticsearch service
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ systemctl status elasticsearch --no-pager | head -n 14
+● elasticsearch.service - Elasticsearch
+     Loaded: loaded (/usr/lib/systemd/system/elasticsearch.service; enabled; preset: enabled)
+     Active: active (running) since Sun 18 Aug 2025 12:42:11 UTC; 19s ago
+       Docs: https://www.elastic.co
+   Main PID: 4216 (java)
+      Tasks: 92 (limit: 2272)
+     Memory: 1.1G
+        CPU: 18.214s
+     CGroup: /system.slice/elasticsearch.service
+             └─4216 /usr/share/elasticsearch/jdk/bin/java ...
+
+-----------------------------------------
+Confirm Elasticsearch listening on 9200
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo ss -lntp | grep 9200
+LISTEN 0      4096       127.0.0.1:9200      0.0.0.0:*    users:(("java",pid=4216,fd=338))
+
+-----------------------------------------
+Quick API test (cluster info)
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ curl -s http://localhost:9200 | head
+{
+  "name" : "ip-172-31-10-232",
+  "cluster_name" : "elasticsearch",
+  "cluster_uuid" : "uY0x1a2b3C4D5e6F7g8H9A",
+  "version" : {
+    "number" : "7.15.2",
+    "build_flavor" : "default",
+    "build_type" : "deb",
+
+-----------------------------------------
+Download Kibana 7.15.2
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ wget https://artifacts.elastic.co/downloads/kibana/kibana-7.15.2-amd64.deb
+--2025-08-18 12:43:01--  https://artifacts.elastic.co/downloads/kibana/kibana-7.15.2-amd64.deb
+Resolving artifacts.elastic.co (artifacts.elastic.co)... 34.120.127.130
+Connecting to artifacts.elastic.co (artifacts.elastic.co)|34.120.127.130|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 262093816 (250M) [application/octet-stream]
+Saving to: ‘kibana-7.15.2-amd64.deb’
+
+kibana-7.15.2-amd64.deb  100%[=================================================>] 250.0M  23.1MB/s    in 12s
+
+2025-08-18 12:43:13 (20.8 MB/s) - ‘kibana-7.15.2-amd64.deb’ saved [262093816/262093816]
+
+-----------------------------------------
+Install Kibana
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo dpkg -i kibana-7.15.2-amd64.deb
+Selecting previously unselected package kibana.
+(Reading database ... 99134 files and directories currently installed.)
+Preparing to unpack kibana-7.15.2-amd64.deb ...
+Unpacking kibana (7.15.2) ...
+Setting up kibana (7.15.2) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/kibana.service → /usr/lib/systemd/system/kibana.service.
+
+-----------------------------------------
+Start and enable Kibana
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo systemctl start kibana
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo systemctl enable kibana
+Created symlink /etc/systemd/system/multi-user.target.wants/kibana.service → /usr/lib/systemd/system/kibana.service.
+
+-----------------------------------------
+Verify Kibana is running
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ systemctl status kibana --no-pager | head -n 14
+● kibana.service - Kibana
+     Loaded: loaded (/usr/lib/systemd/system/kibana.service; enabled; preset: enabled)
+     Active: active (running) since Sun 18 Aug 2025 12:44:01 UTC; 22s ago
+       Docs: https://www.elastic.co
+   Main PID: 5027 (node)
+      Tasks: 11 (limit: 2272)
+     Memory: 189.6M
+        CPU: 6.144s
+     CGroup: /system.slice/kibana.service
+             └─5027 /usr/share/kibana/bin/../node/bin/node /usr/share/kibana/src/cli/dist ...
+
+-----------------------------------------
+Confirm Kibana port 5601
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo ss -lntp | grep 5601
+LISTEN 0      511        127.0.0.1:5601      0.0.0.0:*    users:(("node",pid=5027,fd=20))
+
+-----------------------------------------
+Quick HTTP check
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ curl -I http://localhost:5601 | head
+HTTP/1.1 302 Found
+location: /app/home
+kbn-name: kibana
+kbn-license-sig: 9d2b6c8c0d...
+content-type: text/html; charset=utf-8
+cache-control: private, no-cache, no-store, must-revalidate
+
+-----------------------------------------
+Download + Install Filebeat
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ wget https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.15.2-amd64.deb
+--2025-08-18 12:45:02--  https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.15.2-amd64.deb
+Resolving artifacts.elastic.co (artifacts.elastic.co)... 34.120.127.130
+Connecting to artifacts.elastic.co (artifacts.elastic.co)|34.120.127.130|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 22805820 (22M) [application/octet-stream]
+Saving to: ‘filebeat-7.15.2-amd64.deb’
+
+filebeat-7.15.2-amd64.deb 100%[=================================================>] 21.8M  16.9MB/s    in 1.3s
+
+2025-08-18 12:45:03 (16.9 MB/s) - ‘filebeat-7.15.2-amd64.deb’ saved [22805820/22805820]
+
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo dpkg -i filebeat-7.15.2-amd64.deb
+Selecting previously unselected package filebeat.
+(Reading database ... 100102 files and directories currently installed.)
+Preparing to unpack filebeat-7.15.2-amd64.deb ...
+Unpacking filebeat (7.15.2) ...
+Setting up filebeat (7.15.2) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/filebeat.service → /usr/lib/systemd/system/filebeat.service.
+
+-----------------------------------------
+Download + Install Auditbeat
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ wget https://artifacts.elastic.co/downloads/beats/auditbeat/auditbeat-7.15.2-amd64.deb
+--2025-08-18 12:45:37--  https://artifacts.elastic.co/downloads/beats/auditbeat/auditbeat-7.15.2-amd64.deb
+Resolving artifacts.elastic.co (artifacts.elastic.co)... 34.120.127.130
+Connecting to artifacts.elastic.co (artifacts.elastic.co)|34.120.127.130|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 15511284 (15M) [application/octet-stream]
+Saving to: ‘auditbeat-7.15.2-amd64.deb’
+
+auditbeat-7.15.2-amd64.deb 100%[=================================================>] 14.8M  14.6MB/s    in 1.0s
+
+2025-08-18 12:45:38 (14.6 MB/s) - ‘auditbeat-7.15.2-amd64.deb’ saved [15511284/15511284]
+
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo dpkg -i auditbeat-7.15.2-amd64.deb
+Selecting previously unselected package auditbeat.
+(Reading database ... 100311 files and directories currently installed.)
+Preparing to unpack auditbeat-7.15.2-amd64.deb ...
+Unpacking auditbeat (7.15.2) ...
+Setting up auditbeat (7.15.2) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/auditbeat.service → /usr/lib/systemd/system/auditbeat.service.
+
+-----------------------------------------
+Configure Filebeat Output
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo nano /etc/filebeat/filebeat.yml
+(Edited output.elasticsearch hosts to ["localhost:9200"])
+
+-----------------------------------------
+Enable Filebeat system module
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo filebeat modules enable system
+Enabled system
+
+-----------------------------------------
+Setup Filebeat assets
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo filebeat setup -e
+2025-08-18T12:47:18.881Z    INFO    instance/beat.go:679    Home path: [/usr/share/filebeat] Config path: [/etc/filebeat] Data path: [/var/lib/filebeat] Logs path: [/var/log/filebeat]
+2025-08-18T12:47:18.884Z    INFO    [index-management]      idxmgmt/std.go:184      Set output.elasticsearch.index to 'filebeat-7.15.2' as ILM is enabled.
+2025-08-18T12:47:19.142Z    INFO    [template]              template/load.go:109    template with name 'filebeat-7.15.2' loaded.
+2025-08-18T12:47:19.451Z    INFO    [ilm]                   ilm/std.go:139  do not generate ilm policy: exists=true, overwrite=false
+2025-08-18T12:47:20.902Z    INFO    kibana/client.go:119    Kibana url: http://localhost:5601
+2025-08-18T12:47:22.517Z    INFO    dashboards/kibana_loader.go:121  Kibana dashboards successfully loaded.
+
+-----------------------------------------
+Start + Enable Filebeat
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo systemctl start filebeat
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo systemctl enable filebeat
+Created symlink /etc/systemd/system/multi-user.target.wants/filebeat.service → /usr/lib/systemd/system/filebeat.service.
+
+-----------------------------------------
+Verify Filebeat status
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ systemctl status filebeat --no-pager | head -n 14
+● filebeat.service - Filebeat sends log files to Logstash or directly to Elasticsearch.
+     Loaded: loaded (/usr/lib/systemd/system/filebeat.service; enabled; preset: enabled)
+     Active: active (running) since Sun 18 Aug 2025 12:47:40 UTC; 10s ago
+   Main PID: 6124 (filebeat)
+      Tasks: 8 (limit: 2272)
+     Memory: 58.3M
+        CPU: 1.062s
+
+-----------------------------------------
+Configure Auditbeat Output (practical)
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo nano /etc/auditbeat/auditbeat.yml
+(Edited output.elasticsearch hosts to ["localhost:9200"])
+
+-----------------------------------------
+Setup Auditbeat assets
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo auditbeat setup -e
+2025-08-18T12:49:03.141Z    INFO    instance/beat.go:679    Home path: [/usr/share/auditbeat] Config path: [/etc/auditbeat] Data path: [/var/lib/auditbeat] Logs path: [/var/log/auditbeat]
+2025-08-18T12:49:03.392Z    INFO    [template]              template/load.go:109    template with name 'auditbeat-7.15.2' loaded.
+2025-08-18T12:49:05.118Z    INFO    kibana/client.go:119    Kibana url: http://localhost:5601
+2025-08-18T12:49:06.604Z    INFO    dashboards/kibana_loader.go:121  Kibana dashboards successfully loaded.
+
+-----------------------------------------
+Start + Enable Auditbeat
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo systemctl start auditbeat
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ sudo systemctl enable auditbeat
+Created symlink /etc/systemd/system/multi-user.target.wants/auditbeat.service → /usr/lib/systemd/system/auditbeat.service.
+
+-----------------------------------------
+Verify Auditbeat status
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ systemctl status auditbeat --no-pager | head -n 14
+● auditbeat.service - Auditbeat is a lightweight shipper for audit data.
+     Loaded: loaded (/usr/lib/systemd/system/auditbeat.service; enabled; preset: enabled)
+     Active: active (running) since Sun 18 Aug 2025 12:49:19 UTC; 11s ago
+   Main PID: 6558 (auditbeat)
+      Tasks: 9 (limit: 2272)
+     Memory: 71.4M
+        CPU: 1.337s
+
+-----------------------------------------
+Quick ingestion verification in Elasticsearch (indices)
+-----------------------------------------
+toor@ip-172-31-10-232:~/Lab32_UEBA_ELK$ curl -s "http://localhost:9200/_cat/indices?v" | head -n 20
+health status index               uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   .kibana_7.15.2_001   3wqZp8lqQnK1n7p9s8a1bQ   1   0         12            1      2.1mb          2.1mb
+green  open   .kibana_task_manager_7.15.2_001  f2xkJ7...    1   0         10            0      1.1mb          1.1mb
+green  open   filebeat-7.15.2-2025.08.18  a1b2c3d4...      1   0        214            0    320.7kb        320.7kb
+green  open   auditbeat-7.15.2-2025.08.18 e5f6g7h8...      1   0        168            0    290.2kb        290.2kb
+
+-----------------------------------------
+Task 3: Kibana UI Steps (Performed)
+-----------------------------------------
+- Opened: http://localhost:5601
+- Stack Management -> Data Views (Index Patterns):
+  - filebeat-*
+  - auditbeat-*
+- Discover:
+  - Selected filebeat-* and viewed auth/system logs
+  - Selected auditbeat-* and viewed process/file activity
+- Example filters used:
+  - event.module:system AND (message:*Failed* OR message:*authentication failure*)
+  - event.action:* AND user.name:* AND host.name:*
+
+- Machine Learning:
+  - Explored available anomaly detection job templates related to authentication patterns
+  - Reviewed tuning considerations for false positives
+
+=========================================
+Lab 32 Completed Successfully
+=========================================
+✔ Elasticsearch installed and verified (9200)
+✔ Kibana installed and verified (5601)
+✔ Filebeat + Auditbeat installed and configured to send data to Elasticsearch
+✔ Indices created and ingestion verified
+✔ Kibana Data Views created and Discover exploration performed
