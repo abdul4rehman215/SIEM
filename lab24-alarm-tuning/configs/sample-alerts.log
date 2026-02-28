@@ -1,0 +1,10 @@
+2026-02-28 12:10:02,114 INFO  elastalert.alert - ALERT: SSH_BruteForce src_ip=45.133.1.10 user=admin count=6
+2026-02-28 12:10:04,991 INFO  elastalert.alert - ALERT: SSH_BruteForce src_ip=45.133.1.10 user=admin count=7
+2026-02-28 12:10:11,230 INFO  elastalert.alert - ALERT: SSH_BruteForce src_ip=203.0.113.50 user=root count=6
+2026-02-28 12:11:19,009 INFO  elastalert.alert - ALERT: HTTP_404_Spike src_ip=192.168.0.10 path=/favicon.ico count=120
+2026-02-28 12:11:21,670 INFO  elastalert.alert - ALERT: HTTP_404_Spike src_ip=192.168.0.10 path=/robots.txt count=135
+2026-02-28 12:11:26,441 INFO  elastalert.alert - ALERT: HTTP_404_Spike src_ip=192.168.0.10 path=/wp-login.php count=141
+2026-02-28 12:12:09,552 INFO  elastalert.alert - ALERT: Port_Scan src_ip=198.51.100.23 dst_ports=22,80,443 count=40
+2026-02-28 12:12:11,925 INFO  elastalert.alert - ALERT: Port_Scan src_ip=198.51.100.23 dst_ports=22,80,443 count=41
+2026-02-28 12:12:14,332 INFO  elastalert.alert - ALERT: Port_Scan src_ip=198.51.100.23 dst_ports=22,80,443 count=42
+2026-02-28 12:12:58,004 INFO  elastalert.alert - ALERT: HTTP_404_Spike src_ip=172.31.10.164 path=/health count=90
