@@ -1,0 +1,38 @@
+[INFO ] 2026-02-28 08:09:18.112 [main] runner - Starting Logstash {"logstash.version"=>"7.17.9"}
+[INFO ] 2026-02-28 08:09:21.447 [Converge PipelineAction::Create<main>] javapipeline - Pipeline started {"pipeline.id"=>"main"}
+{
+      "gate" => "Gate1",
+      "user" => "User123",
+ "event_type" => "Security",
+ "direction" => "Entry",
+  "log_time" => "2023-09-15T00:45:00",
+      "hour" => 0,
+      "tags" => [
+        [0] "unusual_activity"
+    ],
+  "@timestamp" => 2023-09-15T00:45:00.000Z
+}
+{
+      "gate" => "Gate2",
+      "user" => "User456",
+ "event_type" => "Security",
+ "direction" => "Exit",
+  "log_time" => "2023-09-15T01:00:00",
+      "hour" => 1,
+      "tags" => [
+        [0] "unusual_activity"
+    ],
+  "@timestamp" => 2023-09-15T01:00:00.000Z
+}
+{
+      "gate" => "Gate1",
+      "user" => "User789",
+ "event_type" => "Security",
+ "direction" => "Entry",
+  "log_time" => "2023-09-16T01:30:00",
+      "hour" => 1,
+      "tags" => [
+        [0] "unusual_activity"
+    ],
+  "@timestamp" => 2023-09-16T01:30:00.000Z
+}
