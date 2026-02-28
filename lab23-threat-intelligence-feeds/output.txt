@@ -1,0 +1,248 @@
+========================================
+Lab 23 - Threat Intelligence Feeds
+Execution Output Log
+Environment: Ubuntu 24.04.1 LTS (Cloud Lab)
+User: toor
+========================================
+
+------------------------------------------------------------
+Verify ELK services are running (operational check)
+------------------------------------------------------------
+
+toor@ip-172-31-10-197:~$ sudo service elasticsearch status | head
+● elasticsearch.service - Elasticsearch
+   Loaded: loaded (/usr/lib/systemd/system/elasticsearch.service; enabled; preset: enabled)
+   Active: active (running) since Sat 2026-02-28 12:41:11 IST; 18min ago
+
+toor@ip-172-31-10-197:~$ sudo service logstash status | head
+● logstash.service - logstash
+   Loaded: loaded (/usr/lib/systemd/system/logstash.service; enabled; preset: enabled)
+   Active: active (running) since Sat 2026-02-28 12:43:02 IST; 16min ago
+
+toor@ip-172-31-10-197:~$ sudo service kibana status | head
+● kibana.service - Kibana
+   Loaded: loaded (/usr/lib/systemd/system/kibana.service; enabled; preset: enabled)
+   Active: active (running) since Sat 2026-02-28 12:44:10 IST; 15min ago
+
+Explanation:
+- Elasticsearch + Logstash + Kibana are running, so ingestion + visualization is ready.
+
+
+------------------------------------------------------------
+Create local threat feed (malicious IPs JSON) and serve over HTTP
+------------------------------------------------------------
+
+toor@ip-172-31-10-197:~$ mkdir -p ~/lab23-threat-feed && cd ~/lab23-threat-feed
+(no output)
+
+toor@ip-172-31-10-197:~/lab23-threat-feed$ nano malicious-ips-feed.json
+(file created)
+
+toor@ip-172-31-10-197:~/lab23-threat-feed$ python3 -m http.server 8000
+Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...
+
+(Second terminal session)
+
+toor@ip-172-31-10-197:~$ curl -s http://localhost:8000/malicious-ips-feed.json | head
+{
+  "feed_name": "demo_malicious_ips",
+  "generated_at": "2026-02-28T07:25:00Z",
+  "malicious_ips": [
+    "45.133.1.10",
+    "103.87.212.77",
+
+Explanation:
+- Feed endpoint is reachable and can be polled like a real threat intel feed.
+
+
+------------------------------------------------------------
+Logstash configuration for ingesting the feed
+------------------------------------------------------------
+
+toor@ip-172-31-10-197:~$ sudo nano /etc/logstash/conf.d/logstash.conf
+(config updated)
+
+Run Logstash (Ubuntu package path):
+toor@ip-172-31-10-197:~$ sudo /usr/share/logstash/bin/logstash -f /etc/logstash/conf.d/logstash.conf
+
+[2026-02-28T13:01:17,084][INFO ][logstash.runner          ] Starting Logstash {"logstash.version"=>"8.13.4", "jruby.version"=>"jruby 9.4.6.0 (3.1.4) 2024-05-10 6f2b7a9a1a OpenJDK 64-Bit Server VM 21.0.2+13"}
+[2026-02-28T13:01:18,901][INFO ][logstash.javapipeline    ] Pipeline `main` is configured with `pipeline.workers` set to 2
+[2026-02-28T13:01:20,212][INFO ][logstash.javapipeline    ] Pipeline started {"pipeline.id"=>"main"}
+[2026-02-28T13:01:20,319][INFO ][logstash.inputs.http_poller] Registering http_poller Input {:type=>nil, :urls=>{:malicious_ips=>"http://localhost:8000/malicious-ips-feed.json"}}
+
+{
+      "feed" => "demo_malicious_ips",
+        "ip" => "45.133.1.10",
+ "generated_at" => "2026-02-28T07:25:00Z",
+  "@timestamp" => 2026-02-28T07:31:21.122Z,
+    "feed_name" => "demo_malicious_ips",
+      "@version" => "1"
+}
+{
+      "feed" => "demo_malicious_ips",
+        "ip" => "103.87.212.77",
+ "generated_at" => "2026-02-28T07:25:00Z",
+  "@timestamp" => 2026-02-28T07:31:21.122Z,
+    "feed_name" => "demo_malicious_ips",
+      "@version" => "1"
+}
+{
+      "feed" => "demo_malicious_ips",
+        "ip" => "185.220.101.4",
+ "generated_at" => "2026-02-28T07:25:00Z",
+  "@timestamp" => 2026-02-28T07:31:21.122Z,
+    "feed_name" => "demo_malicious_ips",
+      "@version" => "1"
+}
+{
+      "feed" => "demo_malicious_ips",
+        "ip" => "91.92.109.43",
+ "generated_at" => "2026-02-28T07:25:00Z",
+  "@timestamp" => 2026-02-28T07:31:21.122Z,
+    "feed_name" => "demo_malicious_ips",
+      "@version" => "1"
+}
+
+Stopped Logstash after first successful ingest (lab demonstration):
+^C
+[2026-02-28T13:02:04,551][INFO ][logstash.runner          ] SIGINT received. Shutting down.
+[2026-02-28T13:02:06,118][INFO ][logstash.javapipeline    ] Pipeline terminated {"pipeline.id"=>"main"}
+
+
+------------------------------------------------------------
+Verify threat feed is stored in Elasticsearch (index: threat-feed)
+------------------------------------------------------------
+
+toor@ip-172-31-10-197:~$ curl -s "http://localhost:9200/_cat/indices?v" | grep threat-feed
+green  open  threat-feed  6XJt3bQ9Q1y  1  0  4  0  22.7kb  22.7kb
+
+toor@ip-172-31-10-197:~$ curl -s "http://localhost:9200/threat-feed/_search?size=5&pretty"
+{
+  "took" : 6,
+  "timed_out" : false,
+  "_shards" : { "total" : 1, "successful" : 1, "skipped" : 0, "failed" : 0 },
+  "hits" : {
+    "total" : { "value" : 4, "relation" : "eq" },
+    "hits" : [
+      { "_source" : { "ip" : "45.133.1.10", "feed_name" : "demo_malicious_ips", "feed" : "demo_malicious_ips" } },
+      { "_source" : { "ip" : "103.87.212.77", "feed_name" : "demo_malicious_ips", "feed" : "demo_malicious_ips" } },
+      { "_source" : { "ip" : "185.220.101.4", "feed_name" : "demo_malicious_ips", "feed" : "demo_malicious_ips" } },
+      { "_source" : { "ip" : "91.92.109.43", "feed_name" : "demo_malicious_ips", "feed" : "demo_malicious_ips" } }
+    ]
+  }
+}
+
+
+------------------------------------------------------------
+Create inbound logs index + simulate inbound traffic logs
+------------------------------------------------------------
+
+toor@ip-172-31-10-197:~$ curl -s -X PUT "http://localhost:9200/inbound-logs" -H 'Content-Type: application/json' -d '{
+  "mappings": {
+    "properties": {
+      "@timestamp": { "type": "date" },
+      "source": { "properties": { "ip": { "type": "ip" } } },
+      "destination": { "properties": { "ip": { "type": "ip" } } },
+      "event_type": { "type": "keyword" },
+      "message": { "type": "text" }
+    }
+  }
+}' | jq .
+{
+  "acknowledged": true,
+  "shards_acknowledged": true,
+  "index": "inbound-logs"
+}
+
+toor@ip-172-31-10-197:~$ curl -s -X POST "http://localhost:9200/inbound-logs/_bulk" -H 'Content-Type: application/x-ndjson' -d '
+{ "index": {} }
+{ "@timestamp":"2026-02-28T07:40:00Z","source":{"ip":"203.0.113.10"},"destination":{"ip":"172.31.10.197"},"event_type":"http","message":"GET /index.html 200" }
+{ "index": {} }
+{ "@timestamp":"2026-02-28T07:41:00Z","source":{"ip":"45.133.1.10"},"destination":{"ip":"172.31.10.197"},"event_type":"ssh","message":"Failed password for invalid user admin" }
+{ "index": {} }
+{ "@timestamp":"2026-02-28T07:42:00Z","source":{"ip":"198.51.100.23"},"destination":{"ip":"172.31.10.197"},"event_type":"icmp","message":"Ping request" }
+{ "index": {} }
+{ "@timestamp":"2026-02-28T07:43:00Z","source":{"ip":"185.220.101.4"},"destination":{"ip":"172.31.10.197"},"event_type":"http","message":"Suspicious scan /wp-login.php" }
+' | jq .
+{
+  "took": 14,
+  "errors": false,
+  "items": [
+    { "index": { "status": 201 } },
+    { "index": { "status": 201 } },
+    { "index": { "status": 201 } },
+    { "index": { "status": 201 } }
+  ]
+}
+
+toor@ip-172-31-10-197:~$ curl -s -X POST "http://localhost:9200/inbound-logs/_refresh" | jq .
+{
+  "_shards": {
+    "total": 2,
+    "successful": 1,
+    "failed": 0
+  }
+}
+
+
+------------------------------------------------------------
+Correlation workflow: inbound logs matched against threat-feed IOCs
+------------------------------------------------------------
+
+Step 1: Pull malicious IP list from threat-feed
+toor@ip-172-31-10-197:~$ curl -s "http://localhost:9200/threat-feed/_search?size=100&_source=ip" -H 'Content-Type: application/json' -d '{ "query": { "match_all": {} } }' | jq -r '.hits.hits[]._source.ip'
+45.133.1.10
+103.87.212.77
+185.220.101.4
+91.92.109.43
+
+Step 2: Search inbound logs for those IPs
+toor@ip-172-31-10-197:~$ curl -s "http://localhost:9200/inbound-logs/_search?pretty" -H 'Content-Type: application/json' -d '{
+  "query": {
+    "terms": {
+      "source.ip": ["45.133.1.10","103.87.212.77","185.220.101.4","91.92.109.43"]
+    }
+  }
+}'
+{
+  "took" : 3,
+  "timed_out" : false,
+  "_shards" : { "total" : 1, "successful" : 1, "skipped" : 0, "failed" : 0 },
+  "hits" : {
+    "total" : { "value" : 2, "relation" : "eq" },
+    "hits" : [
+      {
+        "_source" : {
+          "@timestamp" : "2026-02-28T07:41:00Z",
+          "source" : { "ip" : "45.133.1.10" },
+          "destination" : { "ip" : "172.31.10.197" },
+          "event_type" : "ssh",
+          "message" : "Failed password for invalid user admin"
+        }
+      },
+      {
+        "_source" : {
+          "@timestamp" : "2026-02-28T07:43:00Z",
+          "source" : { "ip" : "185.220.101.4" },
+          "destination" : { "ip" : "172.31.10.197" },
+          "event_type" : "http",
+          "message" : "Suspicious scan /wp-login.php"
+        }
+      }
+    ]
+  }
+}
+
+Explanation:
+- 2 inbound events matched IPs from the threat intel feed.
+- This demonstrates the core SIEM correlation logic used for detection and alerting.
+
+
+========================================
+Lab 23 Completed Successfully
+- Local threat feed created and served via HTTP
+- Logstash http_poller ingested feed into Elasticsearch index "threat-feed"
+- Threat indicators normalized into 1 event per IP
+- Inbound traffic logs simulated in "inbound-logs"
+- Correlation query detected 2 matches between inbound logs and malicious IP feed
+========================================
