@@ -1,0 +1,28 @@
+{
+  "hits": {
+    "total": { "value": 8, "relation": "eq" },
+    "hits": [
+      {
+        "_source": {
+          "timestamp": "2026-02-28 13:23:23,992",
+          "level": "NOTICE",
+          "details": "[sshd] Ban 127.0.0.1"
+        }
+      },
+      {
+        "_source": {
+          "timestamp": "2026-02-28 13:23:16,771",
+          "level": "INFO",
+          "details": "[sshd] Found 127.0.0.1 - 2026-02-28 13:23:16"
+        }
+      },
+      {
+        "_source": {
+          "timestamp": "2026-02-28 13:23:19,214",
+          "level": "INFO",
+          "details": "[sshd] Found 127.0.0.1 - 2026-02-28 13:23:19"
+        }
+      }
+    ]
+  }
+}
