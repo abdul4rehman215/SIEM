@@ -1,0 +1,10 @@
+** Alert 1709124575.4213: - syscheck,
+2026 Feb 28 12:49:35 (ip-172-31-10-206) any->syscheck
+Rule: 550 (level 7) -> 'Integrity checksum changed.'
+File: '/etc/monitored_file'
+Old size: '0'
+New size: '0'
+Old md5sum was: 'd41d8cd98f00b204e9800998ecf8427e'
+New md5sum is : 'd41d8cd98f00b204e9800998ecf8427e'
+Old sha1sum was: 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+New sha1sum is : 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
