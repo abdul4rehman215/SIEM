@@ -1,0 +1,30 @@
+# artifacts/Tabletop_Exercise_Notes.txt
+Mini Tabletop Exercise - Phishing → Account Compromise (Lab 34)
+
+Date: Aug 18, 2025
+Participants:
+- Incident Response Manager
+- HOA Security Lead
+- IT Support
+
+Scenario Summary:
+User reported clicking a phishing email and entering credentials. SIEM showed unusual login activity.
+
+Timeline (Simulated):
+13:05 - User reports suspicious email + credential submission
+13:08 - SIEM alert: failed logins then success from unfamiliar IP
+13:10 - HOA Security Lead validates IOC: login from unfamiliar IP + unusual time
+13:12 - Classified as Medium severity
+13:15 - IT Support resets user password, enforces MFA
+13:20 - HOA Security Lead checks logs for data access evidence
+13:30 - IR Manager compiles summary and recommends awareness reminder + alert tuning
+
+Decisions:
+- Medium severity handling applied
+- No external comms required (no confirmed data breach)
+- Follow-up actions: phishing awareness note + enforce MFA for all accounts
+
+Lessons Learned:
+- Improve email filtering rules
+- Enhance SIEM detection for "impossible travel" and unusual geolocation
+- Quick user reporting is critical; add reporting guide
