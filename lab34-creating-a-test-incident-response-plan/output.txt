@@ -1,0 +1,67 @@
+=========================================
+Lab 34 - Creating a Test Incident Response Plan (IRP)
+Execution Output Log
+=========================================
+
+-----------------------------------------
+Step 1: Create lab folder
+-----------------------------------------
+toor@ip-172-31-10-164:~$ mkdir -p Lab34_IRP && cd Lab34_IRP
+toor@ip-172-31-10-164:~/Lab34_IRP$
+
+-----------------------------------------
+Step 2: Create Incident Response Plan file (Markdown)
+-----------------------------------------
+toor@ip-172-31-10-164:~/Lab34_IRP$ nano Incident_Response_Plan.md
+(Created IRP content in nano and saved.)
+
+-----------------------------------------
+Step 3: Confirm file created
+-----------------------------------------
+toor@ip-172-31-10-164:~/Lab34_IRP$ ls -lh
+total 8.0K
+-rw-r--r-- 1 toor toor 4.6K Aug 18 13:26 Incident_Response_Plan.md
+
+-----------------------------------------
+Step 4: Preview plan (verify formatting)
+-----------------------------------------
+toor@ip-172-31-10-164:~/Lab34_IRP$ sed -n '1,40p' Incident_Response_Plan.md
+# Incident Response Plan (IRP) - Test Version (Lab 34)
+
+## 1. Purpose
+This plan defines how the organization will detect, respond to, contain, and recover from cybersecurity incidents.
+It also defines roles, responsibilities, escalation paths, and communication steps.
+
+## 2. Scope
+- Applies to phishing, malware, unauthorized access, data exposure, account compromise, and service disruption.
+- Covers detection → triage → containment → eradication → recovery → post-incident review.
+
+## 3. Incident Response Roles & Responsibilities
+
+| Role | Responsibilities |
+|------|------------------|
+| Incident Response Manager | Coordinate incident response, communication, and reporting |
+| HOA Security Lead | Monitor security alerts, conduct assessments, and report findings |
+| IT Support | Implement technical solutions, recover affected systems |
+
+-----------------------------------------
+Mini Tabletop Exercise Notes (Performed)
+-----------------------------------------
+toor@ip-172-31-10-164:~/Lab34_IRP$ nano Tabletop_Exercise_Notes.txt
+(Added tabletop exercise meeting notes and saved.)
+
+-----------------------------------------
+Verify both files exist
+-----------------------------------------
+toor@ip-172-31-10-164:~/Lab34_IRP$ ls -lh
+total 12K
+-rw-r--r-- 1 toor toor 4.6K Aug 18 13:26 Incident_Response_Plan.md
+-rw-r--r-- 1 toor toor 1.2K Aug 18 13:29 Tabletop_Exercise_Notes.txt
+
+=========================================
+Lab 34 Completed Successfully
+=========================================
+✔ Incident Response Plan documented in Markdown
+✔ Roles and responsibilities defined
+✔ Severity levels and escalation steps defined
+✔ Tabletop exercise scenario validated and documented
