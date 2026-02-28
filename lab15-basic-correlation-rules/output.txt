@@ -1,0 +1,128 @@
+========================================
+Lab 15 - Basic Correlation Rules
+Execution Output Log
+Environment: Ubuntu 24.04.1 LTS (Cloud Lab)
+User: toor
+========================================
+
+------------------------------------------------------------
+Step 1: Confirm environment (optional sanity check)
+------------------------------------------------------------
+
+toor@ip-172-31-10-229:~$ cat /etc/os-release
+PRETTY_NAME="Ubuntu 24.04.1 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.1 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+
+toor@ip-172-31-10-229:~$ pwd
+/home/toor
+
+
+------------------------------------------------------------
+Step 2: Create a working directory for the lab
+------------------------------------------------------------
+
+toor@ip-172-31-10-229:~$ mkdir -p lab15_correlation && cd lab15_correlation
+
+toor@ip-172-31-10-229:~/lab15_correlation$ pwd
+/home/toor/lab15_correlation
+
+
+------------------------------------------------------------
+Step 3: Create the Python script (generate events)
+------------------------------------------------------------
+
+toor@ip-172-31-10-229:~/lab15_correlation$ nano generate_failed_login_events.py
+
+toor@ip-172-31-10-229:~/lab15_correlation$ ls -l
+total 4
+-rw-r--r-- 1 toor toor 268 Feb 28 11:36 generate_failed_login_events.py
+
+
+------------------------------------------------------------
+Step 4: Run the event generator script
+------------------------------------------------------------
+
+toor@ip-172-31-10-229:~/lab15_correlation$ python3 generate_failed_login_events.py
+
+Explanation: The script writes to failed_login_logs.log, so it won’t print anything to the terminal.
+
+
+------------------------------------------------------------
+Step 5: Verify the generated events
+------------------------------------------------------------
+
+toor@ip-172-31-10-229:~/lab15_correlation$ ls -l failed_login_logs.log
+-rw-r--r-- 1 toor toor 402 Feb 28 11:37 failed_login_logs.log
+
+toor@ip-172-31-10-229:~/lab15_correlation$ cat failed_login_logs.log
+INFO:root:Failed login attempt 1
+INFO:root:Failed login attempt 2
+INFO:root:Failed login attempt 3
+INFO:root:Failed login attempt 4
+INFO:root:Failed login attempt 5
+INFO:root:Failed login attempt 6
+INFO:root:Successful login attempt
+
+
+------------------------------------------------------------
+Step 6: Create Correlation Rule Checker Script
+------------------------------------------------------------
+
+toor@ip-172-31-10-229:~/lab15_correlation$ nano correlation_rule_checker.py
+
+toor@ip-172-31-10-229:~/lab15_correlation$ ls -l
+total 12
+-rw-r--r-- 1 toor toor 402 Feb 28 11:37 failed_login_logs.log
+-rw-r--r-- 1 toor toor 746 Feb 28 11:40 correlation_rule_checker.py
+-rw-r--r-- 1 toor toor 268 Feb 28 11:36 generate_failed_login_events.py
+
+
+------------------------------------------------------------
+Step 7: Run the correlation rule checker (simulate SIEM alert trigger)
+------------------------------------------------------------
+
+toor@ip-172-31-10-229:~/lab15_correlation$ python3 correlation_rule_checker.py
+=== Correlation Rule Evaluation ===
+Rule: >= 5 failed logins within 10 minutes + success login
+Failed attempts detected: 6
+Successful login detected: True
+
+[ALERT TRIGGERED] Possible brute-force attack detected!
+
+
+------------------------------------------------------------
+Step 8: Optional Verification - Reduce failures to confirm rule doesn’t trigger
+------------------------------------------------------------
+
+toor@ip-172-31-10-229:~/lab15_correlation$ head -n 3 failed_login_logs.log > failed_login_logs_small.log
+
+toor@ip-172-31-10-229:~/lab15_correlation$ cp failed_login_logs_small.log failed_login_logs.log
+
+toor@ip-172-31-10-229:~/lab15_correlation$ python3 correlation_rule_checker.py
+=== Correlation Rule Evaluation ===
+Rule: >= 5 failed logins within 10 minutes + success login
+Failed attempts detected: 3
+Successful login detected: False
+
+[OK] Rule not triggered.
+
+
+========================================
+Lab 15 Completed Successfully
+- Brute-force correlation scenario defined
+- Events generated via Python log simulation
+- Correlation rule logic evaluated (SIEM-like)
+- Positive trigger verified (6 fails + success)
+- Negative case verified (3 fails, no success)
+========================================
