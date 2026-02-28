@@ -1,0 +1,6 @@
+tablename |      indexname       |                              indexdef
+----------+----------------------+----------------------------------------------------------------------
+app_logs  | app_logs_pkey        | CREATE UNIQUE INDEX app_logs_pkey ON public.app_logs USING btree (id)
+app_logs  | idx_app_logs_ts      | CREATE INDEX idx_app_logs_ts ON public.app_logs USING btree (ts)
+app_logs  | idx_app_logs_severity| CREATE INDEX idx_app_logs_severity ON public.app_logs USING btree (severity)
+(3 rows)
