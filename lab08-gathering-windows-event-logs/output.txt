@@ -1,0 +1,57 @@
+StatusCode        : 200
+StatusDescription : OK
+Content           : {80, 75, 3, 4...}
+RawContent        : HTTP/1.1 200 OK
+                    Content-Length: 122659087
+                    Content-Type: application/zip
+                    ...
+Headers           : {[Content-Length, 122659087], [Content-Type, application/zip], [ETag, "0x8DC2B41C..."], ...}
+RawContentLength  : 122659087
+
+    Directory: C:\Program Files\Winlogbeat
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         2/28/2026   9:22 PM                winlogbeat-8.13.4-windows-x86_64
+
+Status   Name               DisplayName
+------   ----               -----------
+Running  winlogbeat         winlogbeat
+
+winlogbeat.event_logs:
+ - name: Application
+ - name: Security
+ - name: System
+
+Start-Service : Service 'winlogbeat (winlogbeat)' cannot be started due to the following error: 
+Cannot start service winlogbeat on computer '.'.
+At line:1 char:1
++ Start-Service winlogbeat
++ ~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OpenError: (System.ServiceProcess.ServiceController:ServiceController) [Start-Service], ServiceCommandException
+    + FullyQualifiedErrorId : CouldNotStartService,Microsoft.PowerShell.Commands.StartServiceCommand
+
+Status   Name               DisplayName
+------   ----               -----------
+Running  winlogbeat         winlogbeat
+
+Index Time          EntryType   Source                 InstanceID Message
+----- ----          ---------   ------                 ---------- -------
+12461 Feb 28 21:26  Information Application Error      1000       Faulting application name: explorer.exe, version: 10.0.19041.3996, time stamp: 0x...
+12460 Feb 28 21:25  Information MsiInstaller           1033       Product: Microsoft Visual C++ 2015-2022 Redistributable (x64) - 14.38.33135 -- Installation completed successfully.
+12459 Feb 28 21:22  Warning     Microsoft-Windows...   10016      The application-specific permission settings do not grant Local Activation permission for the COM Server application with CLSID ...
+12458 Feb 28 21:18  Information Winlogbeat             1          Winlogbeat service started
+12457 Feb 28 21:17  Information Security-SPP           16384      Successfully scheduled Software Protection service for re-start at 2026-02-28T21:47:41Z.
+
+    Directory: C:\Program Files\Winlogbeat\logs
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         2/28/2026   9:26 PM         184392 winlogbeat
+-a----         2/28/2026   9:25 PM          33841 winlogbeat-2026-02-28.ndjson
+
+# ---------------------------- Elasticsearch Output ----------------------------
+output.elasticsearch:
+  hosts: ["http://10.0.2.15:9200"]
+  username: "elastic"
+  password: "changeme"
