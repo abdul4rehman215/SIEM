@@ -1,0 +1,17 @@
+INFO:elastalert:ElastAlert 0.2.4
+INFO:elastalert:Testing rule HTTP_404_Spike
+INFO:elastalert:Queried elasticsearch for the last 15 minutes
+INFO:elastalert:Got 6 hits from Elasticsearch
+INFO:elastalert:Available terms in first hit: ['@timestamp', 'source', 'destination', 'event_type', 'message']
+INFO:elastalert:Ignoring hits that match exception (must_not)
+INFO:elastalert:After applying filter/exceptions: 3 hits remain
+INFO:elastalert:Found match for HTTP_404_Spike
+INFO:elastalert:Would have sent alert:
+{
+  "rule_name": "HTTP_404_Spike",
+  "num_events": 3,
+  "key": "185.220.101.4",
+  "starttime": "2026-02-28T07:51:00Z",
+  "endtime": "2026-02-28T07:51:20Z"
+}
+INFO:elastalert:0 alerts sent
