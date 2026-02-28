@@ -1,0 +1,4 @@
+winlogbeat.event_logs:
+ - name: Application
+ - name: Security
+ - name: System
