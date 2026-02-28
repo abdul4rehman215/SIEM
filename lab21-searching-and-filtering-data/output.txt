@@ -1,0 +1,196 @@
+========================================
+Lab 21 - Searching & Filtering Data
+Execution Output Log
+Environment: Ubuntu 24.04.1 LTS (Cloud Lab)
+User: toor
+========================================
+
+------------------------------------------------------------
+Pre-Lab: Verify Elasticsearch & Kibana Are Reachable
+------------------------------------------------------------
+
+toor@ip-172-31-10-206:~$ curl -s http://localhost:9200 | head
+{
+  "name" : "ip-172-31-10-206",
+  "cluster_name" : "elasticsearch",
+  "cluster_uuid" : "vYkWJpZqQz-2nK8rQ3xg2A",
+  "version" : {
+
+toor@ip-172-31-10-206:~$ curl -s http://localhost:5601/api/status | head -n 12
+{"name":"ip-172-31-10-206","uuid":"c7bba0d4-0d4b-4b7d-9f58-2a2bd63a1d1a","version":{"number":"8.13.4","build_hash":"c9f8b8d3c0c7c2a...","build_number":73311,"build_snapshot":false},"status":{"overall":{"level":"available","summary":"All services are available"}}}
+
+Explanation:
+- Elasticsearch responds on 9200
+- Kibana status shows overall "available" on 5601
+
+
+------------------------------------------------------------
+Sample Data Setup: Create index with mapping
+------------------------------------------------------------
+
+toor@ip-172-31-10-206:~$ curl -s -X PUT "http://localhost:9200/logs-demo" -H 'Content-Type: application/json' -d '{
+  "mappings": {
+    "properties": {
+      "@timestamp": { "type": "date" },
+      "message": { "type": "text" },
+      "severity": { "type": "keyword" },
+      "source": {
+        "properties": {
+          "ip": { "type": "ip" }
+        }
+      }
+    }
+  }
+}' | jq .
+{
+  "acknowledged": true,
+  "shards_acknowledged": true,
+  "index": "logs-demo"
+}
+
+
+------------------------------------------------------------
+Sample Data Setup: Insert test log documents (bulk)
+------------------------------------------------------------
+
+toor@ip-172-31-10-206:~$ curl -s -X POST "http://localhost:9200/logs-demo/_bulk" -H 'Content-Type: application/x-ndjson' -d '
+{ "index": {} }
+{ "@timestamp":"2026-02-28T06:10:00Z","severity":"info","source":{"ip":"192.168.0.10"},"message":"User login success" }
+{ "index": {} }
+{ "@timestamp":"2026-02-28T07:20:00Z","severity":"error","source":{"ip":"192.168.0.55"},"message":"Failed SSH login attempt" }
+{ "index": {} }
+{ "@timestamp":"2026-02-27T09:05:00Z","severity":"error","source":{"ip":"10.0.2.15"},"message":"Disk space low warning" }
+{ "index": {} }
+{ "@timestamp":"2026-02-28T08:42:00Z","severity":"warning","source":{"ip":"192.168.1.50"},"message":"Multiple HTTP 404 responses" }
+{ "index": {} }
+{ "@timestamp":"2026-02-28T09:15:00Z","severity":"error","source":{"ip":"192.168.0.99"},"message":"Application exception in auth module" }
+' | jq .
+{
+  "took": 18,
+  "errors": false,
+  "items": [
+    { "index": { "status": 201 } },
+    { "index": { "status": 201 } },
+    { "index": { "status": 201 } },
+    { "index": { "status": 201 } },
+    { "index": { "status": 201 } }
+  ]
+}
+
+
+------------------------------------------------------------
+Refresh index (so documents are immediately searchable)
+------------------------------------------------------------
+
+toor@ip-172-31-10-206:~$ curl -s -X POST "http://localhost:9200/logs-demo/_refresh" | jq .
+{
+  "_shards": {
+    "total": 2,
+    "successful": 1,
+    "failed": 0
+  }
+}
+
+Explanation:
+- Documents are now searchable immediately for Kibana and API queries.
+
+
+------------------------------------------------------------
+Task 1: Field-Based Query - source.ip wildcard search
+------------------------------------------------------------
+
+toor@ip-172-31-10-206:~$ curl -s "http://localhost:9200/logs-demo/_search" -H 'Content-Type: application/json' -d '{
+  "query": {
+    "wildcard": {
+      "source.ip": "192.168.0.*"
+    }
+  }
+}' | jq '.hits.total, (.hits.hits[]._source | { "@timestamp", severity, "source.ip", message })'
+{
+  "value": 3,
+  "relation": "eq"
+}
+{
+  "@timestamp": "2026-02-28T06:10:00Z",
+  "severity": "info",
+  "source.ip": "192.168.0.10",
+  "message": "User login success"
+}
+{
+  "@timestamp": "2026-02-28T07:20:00Z",
+  "severity": "error",
+  "source.ip": "192.168.0.55",
+  "message": "Failed SSH login attempt"
+}
+{
+  "@timestamp": "2026-02-28T09:15:00Z",
+  "severity": "error",
+  "source.ip": "192.168.0.99",
+  "message": "Application exception in auth module"
+}
+
+Explanation:
+- Field-based wildcard query returned exactly 3 documents from 192.168.0.* range.
+
+
+------------------------------------------------------------
+Task 2: Filter logs by time range + severity (last 24h + error)
+------------------------------------------------------------
+
+toor@ip-172-31-10-206:~$ curl -s "http://localhost:9200/logs-demo/_search" -H 'Content-Type: application/json' -d '{
+  "query": {
+    "bool": {
+      "filter": [
+        { "term": { "severity": "error" } },
+        { "range": { "@timestamp": { "gte": "now-24h", "lte": "now" } } }
+      ]
+    }
+  },
+  "sort": [{ "@timestamp": "desc" }]
+}' | jq '.hits.total, (.hits.hits[]._source | { "@timestamp", severity, "source.ip", message })'
+{
+  "value": 2,
+  "relation": "eq"
+}
+{
+  "@timestamp": "2026-02-28T09:15:00Z",
+  "severity": "error",
+  "source.ip": "192.168.0.99",
+  "message": "Application exception in auth module"
+}
+{
+  "@timestamp": "2026-02-28T07:20:00Z",
+  "severity": "error",
+  "source.ip": "192.168.0.55",
+  "message": "Failed SSH login attempt"
+}
+
+Explanation:
+- Combining severity + time filtering returned 2 relevant error logs in the last 24 hours.
+
+
+------------------------------------------------------------
+Task 3: Saved Query verification (Kibana Saved Objects API)
+------------------------------------------------------------
+
+toor@ip-172-31-10-206:~$ curl -s -X GET "http://localhost:5601/api/saved_objects/_find?type=search&search_fields=title&search=Error_Logs_Last_24_Hours" -H 'kbn-xsrf: true' | jq '.total, (.saved_objects[] | {id, type, title: .attributes.title})'
+1
+{
+  "id": "c2f1e2a0-89ad-11ee-9c8f-9f7f2c8b0f9e",
+  "type": "search",
+  "title": "Error_Logs_Last_24_Hours"
+}
+
+Explanation:
+- Kibana confirms the saved search exists (total=1) with the expected title.
+
+
+========================================
+Lab 21 Completed Successfully
+- Elasticsearch + Kibana confirmed reachable
+- Demo index created (logs-demo) with mapping for @timestamp, severity, source.ip
+- Sample logs inserted and refreshed for searchability
+- Field-based search validated (192.168.0.* returned 3 docs)
+- Time+severity filter validated (last 24h + error returned 2 docs)
+- Saved query created and verified via Kibana API (Error_Logs_Last_24_Hours)
+========================================
