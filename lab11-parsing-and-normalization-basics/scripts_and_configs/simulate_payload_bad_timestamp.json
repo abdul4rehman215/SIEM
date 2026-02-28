@@ -1,0 +1,12 @@
+{
+  "docs": [
+    {
+      "_source": {
+        "timestamp": "15-10-2023 13:45:30",
+        "ip_addr": "192.168.1.50",
+        "event_id": "abc124",
+        "event_type": "UserLogin"
+      }
+    }
+  ]
+}
