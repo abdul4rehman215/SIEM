@@ -1,0 +1,346 @@
+=========================================
+Lab 27 - Utilizing Dashboards for Executive Reporting
+Execution Output Log
+=========================================
+
+-----------------------------------------
+Environment Verification
+-----------------------------------------
+toor@ip-172-31-10-198:~$ cat /etc/os-release
+PRETTY_NAME="Ubuntu 24.04.1 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.1 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+
+-----------------------------------------
+System Update
+-----------------------------------------
+toor@ip-172-31-10-198:~$ sudo apt update
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+87 packages can be upgraded. Run 'apt list --upgradable' to see them.
+
+-----------------------------------------
+Install Required Tools
+-----------------------------------------
+toor@ip-172-31-10-198:~$ sudo apt install -y apt-transport-https software-properties-common wget gpg
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+apt-transport-https is already the newest version (2.7.14).
+software-properties-common is already the newest version (0.99.49.1).
+wget is already the newest version (1.21.4-1ubuntu4.1).
+gpg is already the newest version (2.4.4-2ubuntu17).
+0 upgraded, 0 newly installed, 0 to remove and 87 not upgraded.
+
+-----------------------------------------
+Add Grafana GPG Key + Repository
+-----------------------------------------
+toor@ip-172-31-10-198:~$ sudo mkdir -p /etc/apt/keyrings
+
+toor@ip-172-31-10-198:~$ wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | sudo tee /etc/apt/keyrings/grafana.gpg > /dev/null
+
+toor@ip-172-31-10-198:~$ echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" | sudo tee /etc/apt/sources.list.d/grafana.list
+deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main
+
+-----------------------------------------
+Install Grafana
+-----------------------------------------
+toor@ip-172-31-10-198:~$ sudo apt update
+Get:1 https://apt.grafana.com stable InRelease [3,981 B]
+Get:2 https://apt.grafana.com stable/main amd64 Packages [14.9 kB]
+Fetched 18.9 kB in 1s (21.4 kB/s)
+Reading package lists... Done
+
+toor@ip-172-31-10-198:~$ sudo apt install -y grafana
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following NEW packages will be installed:
+  grafana
+0 upgraded, 1 newly installed, 0 to remove and 87 not upgraded.
+Need to get 132 MB of archives.
+After this operation, 430 MB of additional disk space will be used.
+Get:1 https://apt.grafana.com stable/main amd64 grafana amd64 11.2.0 [132 MB]
+Fetched 132 MB in 7s (18.3 MB/s)
+Selecting previously unselected package grafana.
+(Reading database ... 98512 files and directories currently installed.)
+Preparing to unpack .../grafana_11.2.0_amd64.deb ...
+Unpacking grafana (11.2.0) ...
+Setting up grafana (11.2.0) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/grafana-server.service → /usr/lib/systemd/system/grafana-server.service.
+
+-----------------------------------------
+Start + Enable Grafana Service
+-----------------------------------------
+toor@ip-172-31-10-198:~$ sudo systemctl enable --now grafana-server
+Created symlink /etc/systemd/system/multi-user.target.wants/grafana-server.service → /usr/lib/systemd/system/grafana-server.service.
+
+-----------------------------------------
+Verify Grafana Service Status
+-----------------------------------------
+toor@ip-172-31-10-198:~$ systemctl status grafana-server --no-pager
+● grafana-server.service - Grafana instance
+     Loaded: loaded (/usr/lib/systemd/system/grafana-server.service; enabled; preset: enabled)
+     Active: active (running) since Sun 18 Aug 2025 10:42:19 UTC; 12s ago
+       Docs: http://docs.grafana.org
+   Main PID: 3512 (grafana)
+      Tasks: 11 (limit: 2272)
+     Memory: 86.4M
+        CPU: 1.094s
+     CGroup: /system.slice/grafana-server.service
+             └─3512 /usr/sbin/grafana server --config=/etc/grafana/grafana.ini --pidfile=/run/grafana/grafana-server.pid --packaging=deb cfg:default.paths.provisioning=/etc/grafana/provisioning
+
+-----------------------------------------
+Confirm Port 3000 is Listening
+-----------------------------------------
+toor@ip-172-31-10-198:~$ sudo ss -lntp | grep 3000
+LISTEN 0      4096         0.0.0.0:3000      0.0.0.0:*    users:(("grafana",pid=3512,fd=12))
+
+-----------------------------------------
+HTTP Check (Grafana)
+-----------------------------------------
+toor@ip-172-31-10-198:~$ curl -I http://localhost:3000 | head
+HTTP/1.1 302 Found
+Cache-Control: no-cache
+Content-Type: text/html; charset=utf-8
+Location: /login
+Set-Cookie: grafana_session=; Path=/; HttpOnly; SameSite=Lax
+X-Content-Type-Options: nosniff
+X-Frame-Options: deny
+Date: Sun, 18 Aug 2025 10:42:33 GMT
+
+-----------------------------------------
+Browser Step (Performed)
+-----------------------------------------
+Opened: http://localhost:3000
+Logged in with default Grafana credentials (first login):
+  Username: admin
+  Password: admin
+Changed password when prompted (first-login setup).
+
+-----------------------------------------
+Install MariaDB Server
+-----------------------------------------
+toor@ip-172-31-10-198:~$ sudo apt install -y mariadb-server
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following NEW packages will be installed:
+  mariadb-server mariadb-client mariadb-common
+0 upgraded, 3 newly installed, 0 to remove and 87 not upgraded.
+Need to get 21.3 MB of archives.
+After this operation, 198 MB of additional disk space will be used.
+...
+Setting up mariadb-server (1:10.11.6-0ubuntu0.24.04.1) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/mariadb.service → /usr/lib/systemd/system/mariadb.service.
+
+-----------------------------------------
+Start DB + Verify Status
+-----------------------------------------
+toor@ip-172-31-10-198:~$ sudo systemctl enable --now mariadb
+
+toor@ip-172-31-10-198:~$ systemctl status mariadb --no-pager | head -n 12
+● mariadb.service - MariaDB 10.11.6 database server
+     Loaded: loaded (/usr/lib/systemd/system/mariadb.service; enabled; preset: enabled)
+     Active: active (running) since Sun 18 Aug 2025 10:43:58 UTC; 6s ago
+       Docs: man:mariadbd(8)
+             https://mariadb.com/kb/en/library/systemd/
+   Main PID: 4021 (mariadbd)
+     Status: "Taking your SQL requests now..."
+      Tasks: 14 (limit: 2272)
+     Memory: 149.7M
+        CPU: 1.241s
+
+-----------------------------------------
+Create DB + Tables + Sample Data
+-----------------------------------------
+toor@ip-172-31-10-198:~$ sudo mariadb
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 17
+Server version: 10.11.6-MariaDB-0ubuntu0.24.04.1 Ubuntu 24.04
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> CREATE DATABASE exec_reporting;
+Query OK, 1 row affected (0.001 sec)
+
+MariaDB [(none)]> USE exec_reporting;
+Database changed
+
+MariaDB [exec_reporting]> CREATE TABLE incidents (
+    incident_id INT AUTO_INCREMENT PRIMARY KEY,
+    date DATE NOT NULL
+);
+Query OK, 0 rows affected (0.008 sec)
+
+MariaDB [exec_reporting]> CREATE TABLE events (
+    event_id INT AUTO_INCREMENT PRIMARY KEY,
+    event_type VARCHAR(100) NOT NULL,
+    event_time DATETIME NOT NULL
+);
+Query OK, 0 rows affected (0.007 sec)
+
+MariaDB [exec_reporting]> INSERT INTO incidents (date) VALUES
+('2025-08-12'),('2025-08-12'),('2025-08-12'),
+('2025-08-13'),('2025-08-13'),
+('2025-08-14'),('2025-08-14'),('2025-08-14'),('2025-08-14'),
+('2025-08-15'),
+('2025-08-16'),('2025-08-16'),
+('2025-08-17'),('2025-08-17'),('2025-08-17'),('2025-08-17');
+Query OK, 16 rows affected (0.002 sec)
+Records: 16  Duplicates: 0  Warnings: 0
+
+MariaDB [exec_reporting]> INSERT INTO events (event_type, event_time) VALUES
+('Phishing Email', '2025-08-12 09:10:00'),
+('Phishing Email', '2025-08-12 10:22:00'),
+('Malware Detection', '2025-08-12 11:05:00'),
+('Failed Login', '2025-08-13 08:18:00'),
+('Failed Login', '2025-08-13 08:22:00'),
+('Failed Login', '2025-08-13 09:01:00'),
+('Suspicious DNS', '2025-08-14 12:44:00'),
+('Phishing Email', '2025-08-14 14:21:00'),
+('Malware Detection', '2025-08-14 17:02:00'),
+('Port Scan', '2025-08-15 03:17:00'),
+('Port Scan', '2025-08-15 03:19:00'),
+('Phishing Email', '2025-08-16 15:33:00'),
+('Suspicious DNS', '2025-08-16 16:11:00'),
+('Failed Login', '2025-08-17 10:01:00'),
+('Failed Login', '2025-08-17 10:02:00');
+Query OK, 15 rows affected (0.002 sec)
+Records: 15  Duplicates: 0  Warnings: 0
+
+-----------------------------------------
+Validate Sample Queries (Daily Incidents)
+-----------------------------------------
+MariaDB [exec_reporting]> SELECT date, COUNT(incident_id) AS incident_count FROM incidents GROUP BY date;
++------------+----------------+
+| date       | incident_count |
++------------+----------------+
+| 2025-08-12 |              3 |
+| 2025-08-13 |              2 |
+| 2025-08-14 |              4 |
+| 2025-08-15 |              1 |
+| 2025-08-16 |              2 |
+| 2025-08-17 |              4 |
++------------+----------------+
+6 rows in set (0.000 sec)
+
+-----------------------------------------
+Validate Sample Queries (Top Event Types)
+-----------------------------------------
+MariaDB [exec_reporting]> SELECT event_type, COUNT(*) AS event_count FROM events GROUP BY event_type;
++-------------------+-------------+
+| event_type        | event_count |
++-------------------+-------------+
+| Failed Login      |           5 |
+| Malware Detection |           2 |
+| Phishing Email    |           5 |
+| Port Scan         |           2 |
+| Suspicious DNS    |           2 |
++-------------------+-------------+
+5 rows in set (0.000 sec)
+
+-----------------------------------------
+Create Grafana Read-Only DB User
+-----------------------------------------
+MariaDB [exec_reporting]> CREATE USER 'grafana'@'localhost' IDENTIFIED BY '***REDACTED***';
+Query OK, 0 rows affected (0.001 sec)
+
+MariaDB [exec_reporting]> GRANT SELECT ON exec_reporting.* TO 'grafana'@'localhost';
+Query OK, 0 rows affected (0.001 sec)
+
+MariaDB [exec_reporting]> FLUSH PRIVILEGES;
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [exec_reporting]> EXIT;
+Bye
+
+-----------------------------------------
+Grafana UI Data Source Configuration (Performed)
+-----------------------------------------
+Grafana -> Connections -> Data sources -> Add data source -> MySQL
+Values entered:
+  Host: 127.0.0.1:3306
+  Database: exec_reporting
+  User: grafana
+  Password: ***REDACTED***
+Action:
+  Save & Test
+Result:
+  Database Connection OK
+
+-----------------------------------------
+Dashboard Panel Queries (Configured in Grafana)
+-----------------------------------------
+Daily Incidents (Time Series panel)
+Query:
+SELECT
+  date AS time,
+  COUNT(incident_id) AS incident_count
+FROM incidents
+GROUP BY date
+ORDER BY date;
+
+Top Event Types (Pie Chart panel)
+Query:
+SELECT
+  event_type,
+  COUNT(*) AS event_count
+FROM events
+GROUP BY event_type
+ORDER BY event_count DESC;
+
+-----------------------------------------
+Dashboard Labels/Formatting (Configured in Grafana)
+-----------------------------------------
+Daily Incidents Panel:
+  Panel Title: Daily Incidents
+  X-axis label: Date
+  Y-axis label: Number of Incidents
+  Threshold guidance used:
+    0–2 = normal
+    3–4 = attention
+    5+  = high
+
+Top Event Types Panel:
+  Panel Title: Top Event Types
+  Slice label: Name + Value
+  Legend enabled (Event Type + Count)
+
+-----------------------------------------
+Export / Share (Grafana)
+-----------------------------------------
+Dashboard -> Share (top-right)
+- Link sharing tested (internal lab)
+- Snapshot created (example format)
+Snapshot details:
+  Snapshot name: exec-reporting-dashboard
+  Snapshot expiry: 1 hour
+  Snapshot URL:
+  http://localhost:3000/dashboard/snapshot/8cYp1mQzK2nNw1vR7aX4tLhP9sD3eJkG
+
+=========================================
+Lab 27 Completed Successfully
+=========================================
+✔ Grafana installed and running
+✔ MariaDB dataset created
+✔ Grafana MySQL datasource connected
+✔ Daily incidents chart created
+✔ Top event types pie chart created
+✔ Share/snapshot options tested
