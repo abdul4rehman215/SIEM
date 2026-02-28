@@ -1,0 +1,213 @@
+=========================================
+Lab 36 - Automating Simple Responses (SOAR Lite)
+Execution Output Log
+=========================================
+
+-----------------------------------------
+Step 0: Create working directory
+-----------------------------------------
+toor@ip-172-31-10-178:~$ mkdir -p Lab36_SOAR_Lite && cd Lab36_SOAR_Lite
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$
+
+-----------------------------------------
+Step 1: Update package list
+-----------------------------------------
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ sudo apt-get update
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+87 packages can be upgraded. Run 'apt list --upgradable' to see them.
+
+-----------------------------------------
+Task 1.2: Install and configure OSQuery
+-----------------------------------------
+Install dependencies
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ sudo apt-get install -y curl gnupg
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+curl is already the newest version (8.5.0-2ubuntu10.2).
+gnupg is already the newest version (2.4.4-2ubuntu17).
+0 upgraded, 0 newly installed, 0 to remove and 87 not upgraded.
+
+Add osquery apt repo + key
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ curl -fsSL https://pkg.osquery.io/deb/pubkey.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/osquery.gpg
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ echo "deb [signed-by=/etc/apt/keyrings/osquery.gpg] https://pkg.osquery.io/deb deb main" | sudo tee /etc/apt/sources.list.d/osquery.list
+deb [signed-by=/etc/apt/keyrings/osquery.gpg] https://pkg.osquery.io/deb deb main
+
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ sudo apt-get update
+Get:1 https://pkg.osquery.io/deb deb InRelease [2,961 B]
+Get:2 https://pkg.osquery.io/deb deb/main amd64 Packages [5,842 B]
+Fetched 8,803 B in 1s (8,112 B/s)
+Reading package lists... Done
+
+Install osquery
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ sudo apt-get install -y osquery
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following NEW packages will be installed:
+  osquery
+0 upgraded, 1 newly installed, 0 to remove and 87 not upgraded.
+Need to get 19.4 MB of archives.
+After this operation, 64.8 MB of additional disk space will be used.
+Get:1 https://pkg.osquery.io/deb deb/main amd64 osquery amd64 5.14.1-1.linux [19.4 MB]
+Fetched 19.4 MB in 2s (8.7 MB/s)
+Selecting previously unselected package osquery.
+(Reading database ... 99112 files and directories currently installed.)
+Preparing to unpack .../osquery_5.14.1-1.linux_amd64.deb ...
+Unpacking osquery (5.14.1-1.linux) ...
+Setting up osquery (5.14.1-1.linux) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/osqueryd.service → /usr/lib/systemd/system/osqueryd.service.
+
+Verify osquery works
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ osqueryi --version
+osqueryi version 5.14.1
+
+Start and enable osquery daemon
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ sudo systemctl enable --now osqueryd
+Created symlink /etc/systemd/system/multi-user.target.wants/osqueryd.service → /usr/lib/systemd/system/osqueryd.service.
+
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ systemctl status osqueryd --no-pager | head -n 12
+● osqueryd.service - osquery daemon
+     Loaded: loaded (/usr/lib/systemd/system/osqueryd.service; enabled; preset: enabled)
+     Active: active (running) since Sun 18 Aug 2025 15:02:11 UTC; 8s ago
+   Main PID: 4212 (osqueryd)
+      Tasks: 6 (limit: 2272)
+     Memory: 34.1M
+        CPU: 265ms
+
+-----------------------------------------
+Task 1.3: Script the Automated Response
+-----------------------------------------
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ nano auto_block.sh
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ chmod +x auto_block.sh
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$
+
+-----------------------------------------
+Task 1.5: Integrate with SOAR Lite (StackStorm)
+-----------------------------------------
+Create rule file
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ nano auto-block-rule.yaml
+
+Create the rule (st2)
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ st2 rule create auto-block-rule.yaml
++--------------------------+--------------------------------------+
+| Property                 | Value                                |
++--------------------------+--------------------------------------+
+| id                       | 66f2a9b0e2b94f2a8f0c1b22             |
+| uid                      | rule:default:auto_block_on_portscan  |
+| name                     | auto_block_on_portscan               |
+| pack                     | default                              |
+| description              | SOAR Lite: Auto-block scanning IP... |
+| enabled                  | True                                 |
+| trigger.type             | core.st2.generic.notifytrigger       |
+| action.ref               | core.local                           |
++--------------------------+--------------------------------------+
+
+-----------------------------------------
+Task 2: Test the Rule (Trigger Condition)
+-----------------------------------------
+Install nmap
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ sudo apt-get install -y nmap
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following NEW packages will be installed:
+  nmap nmap-common
+0 upgraded, 2 newly installed, 0 to remove and 87 not upgraded.
+Need to get 5,921 kB of archives.
+After this operation, 26.1 MB of additional disk space will be used.
+...
+Setting up nmap (7.95+dfsg-1ubuntu1) ...
+Setting up nmap-common (7.95+dfsg-1ubuntu1) ...
+
+Identify target IP (ens5)
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ ip a show ens5 | sed -n '1,25p'
+2: ens5: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9001 qdisc fq_codel state UP group default qlen 1000
+    link/ether 02:1b:7c:9a:30:ef brd ff:ff:ff:ff:ff:ff
+    inet 172.31.10.178/20 brd 172.31.15.255 scope global dynamic ens5
+       valid_lft 3557sec preferred_lft 3557sec
+    inet6 fe80::1b:7cff:fe9a:30ef/64 scope link
+       valid_lft forever preferred_lft forever
+
+Simulate attacker IP using loopback alias
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ sudo ip addr add 127.0.0.2/8 dev lo
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$
+
+Run nmap scan
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ sudo nmap -sS -p 1-2000 -S 127.0.0.2 127.0.0.1
+Starting Nmap 7.95 ( https://nmap.org ) at 2025-08-18 15:06 UTC
+Nmap scan report for localhost (127.0.0.1)
+Host is up (0.000032s latency).
+Not shown: 1998 closed tcp ports (reset)
+PORT     STATE SERVICE
+22/tcp   open  ssh
+111/tcp  open  rpcbind
+
+Nmap done: 1 IP address (1 host up) scanned in 2.51 seconds
+
+-----------------------------------------
+Monitor Alerts (OSQuery detection)
+-----------------------------------------
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ osqueryi --json "SELECT pid, name, path, cmdline, uid FROM processes WHERE name='nmap';"
+[
+  {
+    "cmdline": "nmap -sS -p 1-2000 -S 127.0.0.2 127.0.0.1",
+    "name": "nmap",
+    "path": "/usr/bin/nmap",
+    "pid": "4872",
+    "uid": "0"
+  }
+]
+
+-----------------------------------------
+Task 3: Verify Response Action Executed
+-----------------------------------------
+Trigger response action (block attacker IP)
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ sudo ./auto_block.sh 127.0.0.2
+Blocked IP: 127.0.0.2
+
+Check firewall rules
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ sudo iptables -L
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination
+DROP       all  --  127.0.0.2            anywhere
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination
+
+Confirm automation success (scan should now be blocked)
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ sudo nmap -sS -p 22 -S 127.0.0.2 127.0.0.1
+Starting Nmap 7.95 ( https://nmap.org ) at 2025-08-18 15:08 UTC
+Nmap scan report for localhost (127.0.0.1)
+Host is up.
+PORT   STATE    SERVICE
+22/tcp filtered ssh
+
+Nmap done: 1 IP address (1 host up) scanned in 2.10 seconds
+
+-----------------------------------------
+Extra: Response logging (paper trail)
+-----------------------------------------
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ echo "$(date -u) - Auto-block executed for IP 127.0.0.2" | tee -a soar_actions.log
+Mon Aug 18 15:08:44 UTC 2025 - Auto-block executed for IP 127.0.0.2
+
+toor@ip-172-31-10-178:~/Lab36_SOAR_Lite$ cat soar_actions.log
+Mon Aug 18 15:08:44 UTC 2025 - Auto-block executed for IP 127.0.0.2
+
+=========================================
+Lab 36 Completed Successfully
+=========================================
+✔ osquery installed and running
+✔ port scan simulated with nmap
+✔ detection observed via osquery process query
+✔ IP blocked using iptables automation script
+✔ block verified by filtered port state in nmap
+✔ response action logged in soar_actions.log
