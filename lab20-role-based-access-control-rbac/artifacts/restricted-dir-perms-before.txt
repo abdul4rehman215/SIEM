@@ -1,0 +1,3 @@
+# Directory permissions after initial analyst read-only setup
+
+drwxr-x--- 2 root analyst 4096 Aug 18 12:44 /var/restricted
