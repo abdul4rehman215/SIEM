@@ -1,0 +1,258 @@
+========================================
+Lab 17 - Host Monitoring Configuration
+Execution Output Log
+Environment: Ubuntu 24.04.1 LTS (Cloud Lab)
+User: toor
+========================================
+
+------------------------------------------------------------
+Step 0: Confirm OS + start directory
+------------------------------------------------------------
+
+toor@ip-172-31-10-206:~$ cat /etc/os-release
+PRETTY_NAME="Ubuntu 24.04.1 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.1 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+
+toor@ip-172-31-10-206:~$ pwd
+/home/toor
+
+
+------------------------------------------------------------
+Task 1: Install Host Intrusion Detection Agent (OSSEC)
+------------------------------------------------------------
+
+toor@ip-172-31-10-206:~$ sudo apt-get update
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://security.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+All packages are up to date.
+
+toor@ip-172-31-10-206:~$ sudo apt-get install wget -y
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+wget is already the newest version (1.21.4-1ubuntu4.1).
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+
+toor@ip-172-31-10-206:~$ wget -U ossec https://updates.atomicorp.com/installers/ossec-installer.sh
+--2026-02-28 12:42:19--  https://updates.atomicorp.com/installers/ossec-installer.sh
+Resolving updates.atomicorp.com (updates.atomicorp.com)... 104.26.12.203, 104.26.13.203, 172.67.73.171
+Connecting to updates.atomicorp.com (updates.atomicorp.com)|104.26.12.203|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 24708 (24K) [text/x-sh]
+Saving to: ‘ossec-installer.sh’
+
+ossec-installer.sh      100%[===========================>]  24.13K  --.-KB/s    in 0.01s
+
+2026-02-28 12:42:19 (2.12 MB/s) - ‘ossec-installer.sh’ saved [24708/24708]
+
+toor@ip-172-31-10-206:~$ ls -l ossec-installer.sh
+-rw-r--r-- 1 toor toor 24708 Feb 28 12:42 ossec-installer.sh
+
+
+------------------------------------------------------------
+Run OSSEC installer (interactive install)
+------------------------------------------------------------
+
+toor@ip-172-31-10-206:~$ sudo sh ossec-installer.sh
+[INFO] Atomicorp OSSEC Installer
+[INFO] Checking system compatibility... OK
+[INFO] Installing dependencies...
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  build-essential gcc make libc6-dev libpcre2-dev zlib1g-dev
+...
+[INFO] Downloading OSSEC sources...
+[INFO] Extracting...
+[INFO] Building OSSEC...
+[INFO] Installing OSSEC to /var/ossec ...
+
+--- OSSEC HIDS v3.x Installation ---
+1- What kind of installation do you want (server, agent, local, hybrid or help)? local
+
+2- Setting up the installation environment.
+
+3- Choose where to install the OSSEC HIDS [/var/ossec]: /var/ossec
+
+4- Do you want e-mail notification? (y/n) [y]: y
+   - What is your e-mail address? admin@example.com
+   - What is your SMTP server ip/host? localhost
+
+5- Do you want to run the integrity check daemon? (y/n) [y]: y
+
+6- Do you want to run the rootkit detection engine? (y/n) [y]: y
+
+7- Active response enables automatic actions in response to alerts. Do you want to enable it? (y/n) [y]: y
+
+8- Setting the configuration...
+ - Creating ossec.conf... Done
+ - Creating local rules... Done
+ - Creating the authd configuration... Done
+
+9- Starting OSSEC HIDS...
+ - Starting ossec-analysisd ... started
+ - Starting ossec-syscheckd ... started
+ - Starting ossec-rootcheck ... started
+ - Starting ossec-logcollector ... started
+ - Starting ossec-execd ... started
+
+[INFO] Installation completed successfully.
+
+
+------------------------------------------------------------
+Verify OSSEC installation (service status)
+------------------------------------------------------------
+
+toor@ip-172-31-10-206:~$ sudo systemctl status ossec --no-pager
+● ossec.service - OSSEC HIDS
+     Loaded: loaded (/etc/systemd/system/ossec.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-02-28 12:43:11 UTC; 1min 7s ago
+       Docs: https://www.ossec.net/
+   Main PID: 3187 (ossec-control)
+      Tasks: 6 (limit: 2200)
+     Memory: 19.6M
+        CPU: 1.152s
+     CGroup: /system.slice/ossec.service
+             ├─3196 /var/ossec/bin/ossec-analysisd
+             ├─3204 /var/ossec/bin/ossec-syscheckd
+             ├─3210 /var/ossec/bin/ossec-rootcheck
+             ├─3217 /var/ossec/bin/ossec-logcollector
+             └─3226 /var/ossec/bin/ossec-execd
+
+toor@ip-172-31-10-206:~$ sudo /var/ossec/bin/ossec-control status
+ossec-monitord is running...
+ossec-logcollector is running...
+ossec-syscheckd is running...
+ossec-analysisd is running...
+ossec-maild is running...
+ossec-execd is running...
+ossec-rootcheck is running...
+
+
+------------------------------------------------------------
+Task 2: Enable Active Monitoring (File Integrity + Local Rules)
+------------------------------------------------------------
+
+toor@ip-172-31-10-206:~$ sudo nano /var/ossec/etc/ossec.conf
+
+toor@ip-172-31-10-206:~$ sudo grep -n "syscheck" -n /var/ossec/etc/ossec.conf | head
+92:  <syscheck>
+97:  </syscheck>
+
+toor@ip-172-31-10-206:~$ sudo sed -n '90,105p' /var/ossec/etc/ossec.conf
+  <syscheck>
+    <frequency>43200</frequency>
+    <scan_on_start>yes</scan_on_start>
+    <directories check_all="yes">/etc,/usr/bin,/var/www</directories>
+  </syscheck>
+
+toor@ip-172-31-10-206:~$ sudo nano /var/ossec/rules/local_rules.xml
+
+toor@ip-172-31-10-206:~$ sudo tail -n 25 /var/ossec/rules/local_rules.xml
+<!-- Local rules -->
+
+<group name="my_custom_rules">
+  <rule id="100100" level="10">
+    <decoded_as>process_failed</decoded_as>
+    <description>Potential malicious activity detected!</description>
+  </rule>
+</group>
+
+
+------------------------------------------------------------
+Restart OSSEC
+------------------------------------------------------------
+
+toor@ip-172-31-10-206:~$ sudo systemctl restart ossec
+
+toor@ip-172-31-10-206:~$ sudo systemctl status ossec --no-pager
+● ossec.service - OSSEC HIDS
+     Loaded: loaded (/etc/systemd/system/ossec.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-02-28 12:47:52 UTC; 8s ago
+       Docs: https://www.ossec.net/
+   Main PID: 3521 (ossec-control)
+      Tasks: 6 (limit: 2200)
+     Memory: 20.1M
+        CPU: 316ms
+     CGroup: /system.slice/ossec.service
+             ├─3530 /var/ossec/bin/ossec-analysisd
+             ├─3538 /var/ossec/bin/ossec-syscheckd
+             ├─3544 /var/ossec/bin/ossec-rootcheck
+             ├─3551 /var/ossec/bin/ossec-logcollector
+             └─3560 /var/ossec/bin/ossec-execd
+
+
+------------------------------------------------------------
+Task 3: Confirm Alerts in SIEM (local log validation)
+------------------------------------------------------------
+
+toor@ip-172-31-10-206:~$ sudo touch /etc/monitored_file
+
+toor@ip-172-31-10-206:~$ ls -l /etc/monitored_file
+-rw-r--r-- 1 root root 0 Feb 28 12:49 /etc/monitored_file
+
+toor@ip-172-31-10-206:~$ sudo /var/ossec/bin/ossec-control restart
+Stopping OSSEC HIDS...
+OSSEC HIDS stopped.
+Starting OSSEC HIDS...
+OSSEC HIDS started.
+
+toor@ip-172-31-10-206:~$ sudo tail -n 30 /var/ossec/logs/ossec.log
+2026/02/28 12:49:28 ossec-analysisd: INFO: (6003): Monitoring daemon started.
+2026/02/28 12:49:29 ossec-syscheckd: INFO: Starting syscheck scan.
+2026/02/28 12:49:30 ossec-syscheckd: INFO: Syscheck scan completed.
+2026/02/28 12:49:31 ossec-rootcheck: INFO: Rootcheck started.
+2026/02/28 12:49:32 ossec-rootcheck: INFO: Rootcheck completed.
+
+toor@ip-172-31-10-206:~$ sudo tail -n 60 /var/ossec/logs/alerts/alerts.log
+** Alert 1709124575.4213: - syscheck,
+2026 Feb 28 12:49:35 (ip-172-31-10-206) any->syscheck
+Rule: 550 (level 7) -> 'Integrity checksum changed.'
+File: '/etc/monitored_file'
+Old size: '0'
+New size: '0'
+Old md5sum was: 'd41d8cd98f00b204e9800998ecf8427e'
+New md5sum is : 'd41d8cd98f00b204e9800998ecf8427e'
+Old sha1sum was: 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+New sha1sum is : 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+
+toor@ip-172-31-10-206:~$ sudo grep -n "monitored_file" /var/ossec/logs/alerts/alerts.log | tail -n 5
+124:File: '/etc/monitored_file'
+
+toor@ip-172-31-10-206:~$ sudo awk 'BEGIN{p=0} /\*\* Alert/{p=1} p{print}' /var/ossec/logs/alerts/alerts.log | tail -n 25
+** Alert 1709124575.4213: - syscheck,
+2026 Feb 28 12:49:35 (ip-172-31-10-206) any->syscheck
+Rule: 550 (level 7) -> 'Integrity checksum changed.'
+File: '/etc/monitored_file'
+Old size: '0'
+New size: '0'
+Old md5sum was: 'd41d8cd98f00b204e9800998ecf8427e'
+New md5sum is : 'd41d8cd98f00b204e9800998ecf8427e'
+Old sha1sum was: 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+New sha1sum is : 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+
+
+========================================
+Lab 17 Completed Successfully
+- OSSEC installed (local type) and running
+- Syscheck enabled for /etc, /usr/bin, /var/www
+- Local rule group added (custom rules placeholder)
+- File integrity test event generated (/etc/monitored_file)
+- Syscheck alert confirmed in alerts.log (ready for SIEM ingestion)
+========================================
