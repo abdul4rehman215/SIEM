@@ -1,0 +1,83 @@
+{
+  "took" : 6,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 3,
+    "successful" : 3,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 128,
+      "relation" : "eq"
+    },
+    "max_score" : 1.0,
+    "hits" : [
+      {
+        "_index" : "logs-syslog-2026.02.28",
+        "_id" : "yV1JwJAB9xQ2mZz1pT4n",
+        "_score" : 1.0,
+        "_source" : {
+          "@timestamp" : "2026-02-28T21:45:12.000Z",
+          "host" : {
+            "name" : "web01"
+          },
+          "message" : "Feb 28 21:45:12 web01 sshd[2441]: Failed password for invalid user admin from 203.0.113.55 port 51244 ssh2"
+        }
+      },
+      {
+        "_index" : "logs-syslog-2026.02.28",
+        "_id" : "zF1JwJAB9xQ2mZz1qD7x",
+        "_score" : 1.0,
+        "_source" : {
+          "@timestamp" : "2026-02-28T21:46:01.000Z",
+          "host" : {
+            "name" : "web01"
+          },
+          "message" : "Feb 28 21:46:01 web01 sshd[2441]: Failed password for root from 203.0.113.55 port 51270 ssh2"
+        }
+      },
+      {
+        "_index" : "logs-syslog-2026.02.28",
+        "_id" : "0l1JwJAB9xQ2mZz1r2aG",
+        "_score" : 1.0,
+        "_source" : {
+          "@timestamp" : "2026-02-28T21:46:22.000Z",
+          "host" : {
+            "name" : "web01"
+          },
+          "message" : "Feb 28 21:46:22 web01 sudo:   ubuntu : TTY=pts/0 ; PWD=/home/ubuntu ; USER=root ; COMMAND=/usr/bin/apt update"
+        }
+      }
+    ]
+  }
+}
+
+logstash 8.13.4
+
+# (nano editor opened)
+
+Using bundled JDK: /usr/share/logstash/jdk
+Sending Logstash logs to /var/log/logstash which is now configured via log4j2.properties
+[2026-02-28T22:24:12,810][INFO ][logstash.runner          ] Starting Logstash {"logstash.version"=>"8.13.4", "jruby.version"=>"jruby 9.4.6.0 (3.1.4) 2025-01-10 0e7c4d8 OpenJDK 64-Bit Server VM 21.0.2+13-LTS on 21.0.2+13-LTS +indy +jit [x86_64-linux]"}
+[2026-02-28T22:24:13,102][INFO ][logstash.javapipeline    ][main] Pipeline Java execution initialization time {"seconds"=>0.23}
+[2026-02-28T22:24:13,136][INFO ][logstash.javapipeline    ][main] Pipeline started {"pipeline.id"=>"main"}
+[2026-02-28T22:24:13,182][INFO ][logstash.inputs.stdin    ][main] Starting stdin input listener
+{
+          "message" => "Feb 28 21:45:12 web01 sshd[2441]: Failed password for invalid user admin from 203.0.113.55 port 51244 ssh2",
+         "logdate" => "Feb 28 21:45:12",
+       "logsource" => "web01",
+        "program" => "sshd",
+            "pid" => "2441",
+      "logmessage" => "Failed password for invalid user admin from 203.0.113.55 port 51244 ssh2",
+         "src_ip" => "203.0.113.55",
+       "src_port" => "51244",
+          "@version" => "1",
+        "@timestamp" => 2026-02-28T22:24:13.207Z,
+              "host" => {
+        "hostname" => "ip-172-31-10-207"
+    }
+}
+[2026-02-28T22:24:13,491][INFO ][logstash.javapipeline    ][main] Pipeline terminated {"pipeline.id"=>"main"}
+[2026-02-28T22:24:13,512][INFO ][logstash.runner          ] Logstash shut down.
