@@ -1,0 +1,15 @@
+curl -s http://localhost:9200 | head -n 5
+{
+  "name" : "ip-172-31-10-203",
+  "cluster_name" : "elasticsearch",
+  "cluster_uuid" : "Qm8cTn9bS2mJp1wZ3x7uRg",
+
+sudo systemctl status logstash --no-pager | head -n 5
+● logstash.service - logstash
+     Loaded: loaded (/usr/lib/systemd/system/logstash.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-02-28 12:44:02 IST; 39min ago
+
+sudo systemctl status kibana --no-pager | head -n 5
+● kibana.service - Kibana
+     Loaded: loaded (/usr/lib/systemd/system/kibana.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-02-28 12:45:11 IST; 38min ago
