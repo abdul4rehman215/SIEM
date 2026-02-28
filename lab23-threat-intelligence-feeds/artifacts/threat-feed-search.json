@@ -1,0 +1,11 @@
+{
+  "hits": {
+    "total": { "value": 4, "relation": "eq" },
+    "hits": [
+      { "_source": { "ip": "45.133.1.10", "feed_name": "demo_malicious_ips", "feed": "demo_malicious_ips" } },
+      { "_source": { "ip": "103.87.212.77", "feed_name": "demo_malicious_ips", "feed": "demo_malicious_ips" } },
+      { "_source": { "ip": "185.220.101.4", "feed_name": "demo_malicious_ips", "feed": "demo_malicious_ips" } },
+      { "_source": { "ip": "91.92.109.43", "feed_name": "demo_malicious_ips", "feed": "demo_malicious_ips" } }
+    ]
+  }
+}
