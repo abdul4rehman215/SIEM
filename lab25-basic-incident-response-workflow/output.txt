@@ -1,0 +1,206 @@
+========================================
+Lab 25 - Basic Incident Response Workflow (Fail2Ban + ELK)
+Execution Output Log
+Environment: Ubuntu 24.04.1 LTS (Cloud Lab)
+User: toor
+========================================
+
+------------------------------------------------------------
+Task 1: Install and configure Fail2Ban (sshd jail)
+------------------------------------------------------------
+
+toor@ip-172-31-10-203:~$ sudo apt update
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Hit:4 http://security.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+12 packages can be upgraded. Run 'apt list --upgradable' to see them.
+
+toor@ip-172-31-10-203:~$ sudo apt install fail2ban -y
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  python3-pyinotify whois
+Suggested packages:
+  mailx | mailutils
+The following NEW packages will be installed:
+  fail2ban python3-pyinotify whois
+0 upgraded, 3 newly installed, 0 to remove and 12 not upgraded.
+Need to get 612 kB of archives.
+After this operation, 2,512 kB of additional disk space will be used.
+Fetched 612 kB in 1s (775 kB/s)
+Selecting previously unselected package python3-pyinotify.
+(Reading database ... 97844 files and directories currently installed.)
+Preparing to unpack .../python3-pyinotify_...deb ...
+Unpacking python3-pyinotify ...
+Selecting previously unselected package whois.
+Unpacking whois ...
+Selecting previously unselected package fail2ban.
+Unpacking fail2ban ...
+Setting up python3-pyinotify ...
+Setting up whois ...
+Setting up fail2ban ...
+Created symlink /etc/systemd/system/multi-user.target.wants/fail2ban.service → /usr/lib/systemd/system/fail2ban.service.
+Processing triggers for man-db (2.12.0-4build2) ...
+
+toor@ip-172-31-10-203:~$ sudo nano /etc/fail2ban/jail.local
+(file saved with sshd jail configuration)
+
+toor@ip-172-31-10-203:~$ sudo systemctl restart fail2ban
+(no output)
+
+toor@ip-172-31-10-203:~$ sudo systemctl status fail2ban --no-pager | head -n 12
+● fail2ban.service - Fail2Ban Service
+     Loaded: loaded (/usr/lib/systemd/system/fail2ban.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-02-28 13:22:51 IST; 8s ago
+       Docs: man:fail2ban(1)
+   Main PID: 26341 (fail2ban-server)
+      Tasks: 3 (limit: 2207)
+     Memory: 13.6M
+
+toor@ip-172-31-10-203:~$ sudo fail2ban-client status
+Status
+|- Number of jail:      1
+`- Jail list:   sshd
+
+
+------------------------------------------------------------
+Task 1 (continued): Simulate brute-force SSH failures and verify ban
+------------------------------------------------------------
+
+toor@ip-172-31-10-203:~$ ssh wronguser@localhost
+wronguser@localhost's password:
+Permission denied, please try again.
+wronguser@localhost's password:
+Permission denied, please try again.
+wronguser@localhost's password:
+Permission denied (publickey,password).
+
+toor@ip-172-31-10-203:~$ ssh admin@localhost
+admin@localhost's password:
+Permission denied, please try again.
+admin@localhost's password:
+Permission denied, please try again.
+admin@localhost's password:
+Permission denied (publickey,password).
+
+toor@ip-172-31-10-203:~$ sudo fail2ban-client status sshd
+Status for the jail: sshd
+|- Filter
+|  |- Currently failed: 0
+|  |- Total failed:     6
+|  `- File list:        /var/log/auth.log
+`- Actions
+   |- Currently banned: 1
+   |- Total banned:     1
+   `- Banned IP list:   127.0.0.1
+
+Explanation:
+- Failed SSH attempts exceeded maxretry and triggered a ban.
+- Lab note: the banned IP is 127.0.0.1 because the test was performed from localhost.
+
+toor@ip-172-31-10-203:~$ sudo tail -n 15 /var/log/fail2ban.log
+2026-02-28 13:23:16,771 fail2ban.filter         [26341]: INFO    [sshd] Found 127.0.0.1 - 2026-02-28 13:23:16
+2026-02-28 13:23:19,214 fail2ban.filter         [26341]: INFO    [sshd] Found 127.0.0.1 - 2026-02-28 13:23:19
+2026-02-28 13:23:23,901 fail2ban.filter         [26341]: INFO    [sshd] Found 127.0.0.1 - 2026-02-28 13:23:23
+2026-02-28 13:23:23,992 fail2ban.actions        [26341]: NOTICE  [sshd] Ban 127.0.0.1
+2026-02-28 13:23:24,103 fail2ban.filter         [26341]: INFO    [sshd] Found 127.0.0.1 - 2026-02-28 13:23:24
+
+
+------------------------------------------------------------
+Task 2: Integrate Fail2Ban with ELK (SIEM evidence pipeline)
+------------------------------------------------------------
+
+toor@ip-172-31-10-203:~$ curl -s http://localhost:9200 | head -n 5
+{
+  "name" : "ip-172-31-10-203",
+  "cluster_name" : "elasticsearch",
+  "cluster_uuid" : "Qm8cTn9bS2mJp1wZ3x7uRg",
+
+toor@ip-172-31-10-203:~$ sudo systemctl status logstash --no-pager | head -n 5
+● logstash.service - logstash
+     Loaded: loaded (/usr/lib/systemd/system/logstash.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-02-28 12:44:02 IST; 39min ago
+
+toor@ip-172-31-10-203:~$ sudo systemctl status kibana --no-pager | head -n 5
+● kibana.service - Kibana
+     Loaded: loaded (/usr/lib/systemd/system/kibana.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-02-28 12:45:11 IST; 38min ago
+
+toor@ip-172-31-10-203:~$ sudo nano /etc/logstash/conf.d/fail2ban.conf
+(config created/updated)
+
+toor@ip-172-31-10-203:~$ sudo systemctl restart logstash
+(no output)
+
+toor@ip-172-31-10-203:~$ sudo systemctl status logstash --no-pager | head -n 10
+● logstash.service - logstash
+     Loaded: loaded (/usr/lib/systemd/system/logstash.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-02-28 13:27:44 IST; 6s ago
+
+toor@ip-172-31-10-203:~$ curl -s "http://localhost:9200/_cat/indices?v" | grep fail2ban | tail -n 3
+green  open  fail2ban-2026.02.28  1r5Qwqv2T0m  1  0  8  0  49.9kb  49.9kb
+
+toor@ip-172-31-10-203:~$ curl -s "http://localhost:9200/fail2ban-2026.02.28/_search?size=3&pretty"
+{
+  "hits" : {
+    "total" : { "value" : 8, "relation" : "eq" },
+    "hits" : [
+      {
+        "_source" : {
+          "timestamp" : "2026-02-28 13:23:23,992",
+          "level" : "NOTICE",
+          "details" : "[sshd] Ban 127.0.0.1"
+        }
+      },
+      {
+        "_source" : {
+          "timestamp" : "2026-02-28 13:23:16,771",
+          "level" : "INFO",
+          "details" : "[sshd] Found 127.0.0.1 - 2026-02-28 13:23:16"
+        }
+      },
+      {
+        "_source" : {
+          "timestamp" : "2026-02-28 13:23:19,214",
+          "level" : "INFO",
+          "details" : "[sshd] Found 127.0.0.1 - 2026-02-28 13:23:19"
+        }
+      }
+    ]
+  }
+}
+
+Explanation:
+- Fail2Ban events are now indexed in Elasticsearch under fail2ban-YYYY.MM.DD.
+- Ban events and detections can be used for SIEM investigation and alerting in Kibana.
+
+
+------------------------------------------------------------
+Incident Closure (lab context summary)
+------------------------------------------------------------
+
+Incident:
+- Repeated SSH login failures (brute-force style) detected Feb 28, 2026
+- Automated containment via Fail2Ban ban event
+- Evidence ingested into ELK for SIEM review and documentation
+
+Preventative controls (recommended):
+- SSH keys, disable password auth where possible
+- restrict SSH to VPN/allowlist
+- alert on ban events and spikes in failed auth attempts
+- stronger password and access policies
+
+
+========================================
+Lab 25 Completed Successfully
+- Fail2Ban installed and sshd jail enabled
+- Brute-force simulation triggered ban (127.0.0.1 in lab)
+- Evidence collected from fail2ban-client status and fail2ban logs
+- Logstash ingested /var/log/fail2ban.log into Elasticsearch index fail2ban-2026.02.28
+- Fail2Ban events searchable for SIEM documentation and incident closeout
+========================================
