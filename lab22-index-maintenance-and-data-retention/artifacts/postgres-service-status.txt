@@ -1,0 +1,6 @@
+● postgresql.service - PostgreSQL RDBMS
+     Loaded: loaded (/usr/lib/systemd/system/postgresql.service; enabled; preset: enabled)
+     Active: active (exited) since Sat 2026-02-28 12:08:41 IST; 1min 12s ago
+   Main PID: 22118 (code=exited, status=0/SUCCESS)
+      Tasks: 0 (limit: 2207)
+     Memory: 0B
