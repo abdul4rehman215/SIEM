@@ -1,0 +1,4 @@
+CONTAINER ID   IMAGE                                              COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+a2c1b3d4e5f6   docker.elastic.co/kibana/kibana:7.17.9              "/bin/tini -- /usr…"   15 seconds ago   Up 13 seconds   0.0.0.0:5601->5601/tcp, :::5601->5601/tcp   kibana
+b1d2c3e4f5a6   docker.elastic.co/logstash/logstash:7.17.9          "/usr/local/bin/do…"   15 seconds ago   Up 13 seconds   0.0.0.0:5044->5044/tcp, :::5044->5044/tcp   logstash
+c3d4e5f6a7b8   docker.elastic.co/elasticsearch/elasticsearch:7.17.9 "/bin/tini -- /usr…"  15 seconds ago   Up 13 seconds   0.0.0.0:9200->9200/tcp, :::9200->9200/tcp   elasticsearch
