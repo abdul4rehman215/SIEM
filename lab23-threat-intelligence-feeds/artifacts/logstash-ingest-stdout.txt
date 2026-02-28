@@ -1,0 +1,40 @@
+[2026-02-28T13:01:17,084][INFO ][logstash.runner          ] Starting Logstash {"logstash.version"=>"8.13.4", "jruby.version"=>"jruby 9.4.6.0 (3.1.4) 2024-05-10 6f2b7a9a1a OpenJDK 64-Bit Server VM 21.0.2+13"}
+[2026-02-28T13:01:18,901][INFO ][logstash.javapipeline    ] Pipeline `main` is configured with `pipeline.workers` set to 2
+[2026-02-28T13:01:20,212][INFO ][logstash.javapipeline    ] Pipeline started {"pipeline.id"=>"main"}
+[2026-02-28T13:01:20,319][INFO ][logstash.inputs.http_poller] Registering http_poller Input {:type=>nil, :urls=>{:malicious_ips=>"http://localhost:8000/malicious-ips-feed.json"}}
+
+{
+      "feed" => "demo_malicious_ips",
+        "ip" => "45.133.1.10",
+ "generated_at" => "2026-02-28T07:25:00Z",
+  "@timestamp" => 2026-02-28T07:31:21.122Z,
+    "feed_name" => "demo_malicious_ips",
+      "@version" => "1"
+}
+{
+      "feed" => "demo_malicious_ips",
+        "ip" => "103.87.212.77",
+ "generated_at" => "2026-02-28T07:25:00Z",
+  "@timestamp" => 2026-02-28T07:31:21.122Z,
+    "feed_name" => "demo_malicious_ips",
+      "@version" => "1"
+}
+{
+      "feed" => "demo_malicious_ips",
+        "ip" => "185.220.101.4",
+ "generated_at" => "2026-02-28T07:25:00Z",
+  "@timestamp" => 2026-02-28T07:31:21.122Z,
+    "feed_name" => "demo_malicious_ips",
+      "@version" => "1"
+}
+{
+      "feed" => "demo_malicious_ips",
+        "ip" => "91.92.109.43",
+ "generated_at" => "2026-02-28T07:25:00Z",
+  "@timestamp" => 2026-02-28T07:31:21.122Z,
+    "feed_name" => "demo_malicious_ips",
+      "@version" => "1"
+}
+
+[2026-02-28T13:02:04,551][INFO ][logstash.runner          ] SIGINT received. Shutting down.
+[2026-02-28T13:02:06,118][INFO ][logstash.javapipeline    ] Pipeline terminated {"pipeline.id"=>"main"}
