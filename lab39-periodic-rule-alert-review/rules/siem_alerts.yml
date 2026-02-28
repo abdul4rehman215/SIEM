@@ -1,0 +1,12 @@
+# rules/siem_alerts.yml
+groups:
+  - name: siem_health_rules
+    rules:
+      - alert: HighCPUUsage_SIEMHost
+        expr: 100 - (avg by(instance)(irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 10m
+        labels:
+          severity: high
+        annotations:
+          summary: "High CPU usage detected on SIEM host"
+          description: "CPU usage has been above 85% for more than 10 minutes on {{ $labels.instance }}."
