@@ -1,0 +1,25 @@
+{
+  "hits": {
+    "total": { "value": 2, "relation": "eq" },
+    "hits": [
+      {
+        "_source": {
+          "@timestamp": "2026-02-28T07:41:00Z",
+          "source": { "ip": "45.133.1.10" },
+          "destination": { "ip": "172.31.10.197" },
+          "event_type": "ssh",
+          "message": "Failed password for invalid user admin"
+        }
+      },
+      {
+        "_source": {
+          "@timestamp": "2026-02-28T07:43:00Z",
+          "source": { "ip": "185.220.101.4" },
+          "destination": { "ip": "172.31.10.197" },
+          "event_type": "http",
+          "message": "Suspicious scan /wp-login.php"
+        }
+      }
+    ]
+  }
+}
