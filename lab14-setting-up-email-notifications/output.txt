@@ -1,0 +1,177 @@
+========================================
+Lab 14 - Setting Up Email Notifications
+Execution Output Log
+Environment: Ubuntu 24.04.1 LTS (Cloud Lab)
+User: toor
+========================================
+
+------------------------------------------------------------
+Step 1: Check OS + starting location
+------------------------------------------------------------
+
+toor@ip-172-31-10-214:~$ cat /etc/os-release
+PRETTY_NAME="Ubuntu 24.04.1 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.1 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+
+toor@ip-172-31-10-214:~$ pwd
+/home/toor
+
+
+------------------------------------------------------------
+Step 2: Install mail tools + local SMTP server (Postfix)
+------------------------------------------------------------
+
+toor@ip-172-31-10-214:~$ sudo apt update
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://security.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+All packages are up to date.
+
+toor@ip-172-31-10-214:~$ sudo apt install -y postfix mailutils
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  bsd-mailx cpio libsasl2-modules postfix-pcre
+Suggested packages:
+  procmail postfix-mysql postfix-pgsql postfix-ldap postfix-cdb postfix-lmdb
+The following NEW packages will be installed:
+  bsd-mailx libsasl2-modules mailutils postfix postfix-pcre
+0 upgraded, 5 newly installed, 0 to remove and 0 not upgraded.
+Need to get 3,182 kB of archives.
+After this operation, 10.6 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble/main amd64 postfix amd64 3.8.6-1ubuntu1 [1,579 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble/main amd64 bsd-mailx amd64 8.1.2-0.2build1 [78.3 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble/main amd64 mailutils amd64 1:3.15-2build2 [1,022 kB]
+...
+Setting up postfix (3.8.6-1ubuntu1) ...
+Generating /etc/mailname...
+Processing triggers for man-db (2.12.0-4) ...
+Processing triggers for ufw (0.36.2-6) ...
+
+toor@ip-172-31-10-214:~$ systemctl status postfix --no-pager
+● postfix.service - Postfix Mail Transport Agent
+     Loaded: loaded (/usr/lib/systemd/system/postfix.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-02-28 11:17:03 UTC; 16s ago
+   Main PID: 2463 (master)
+      Tasks: 3 (limit: 2200)
+     Memory: 6.2M
+        CPU: 82ms
+     CGroup: /system.slice/postfix.service
+             ├─2463 /usr/lib/postfix/sbin/master -w
+             ├─2464 qmgr -l -t unix -u
+             └─2465 pickup -l -t unix -u
+
+
+------------------------------------------------------------
+Step 3: Create the config file /etc/alert_system.conf
+------------------------------------------------------------
+
+toor@ip-172-31-10-214:~$ sudo nano /etc/alert_system.conf
+
+toor@ip-172-31-10-214:~$ sudo cat /etc/alert_system.conf
+smtp_host = localhost
+smtp_port = 25
+smtp_username = your_username
+smtp_password = your_password
+smtp_use_tls = false
+
+
+------------------------------------------------------------
+Step 4: Create alert rule definition /etc/alert_rules.conf
+------------------------------------------------------------
+
+toor@ip-172-31-10-214:~$ sudo nano /etc/alert_rules.conf
+
+toor@ip-172-31-10-214:~$ sudo cat /etc/alert_rules.conf
+alert_name = "Failed Login Attempts"
+condition = "5 failed logins in 1 minute"
+trigger_action = "send_email"
+email_recipient = "admin@example.com"
+
+
+------------------------------------------------------------
+Step 5: Create local recipient user (admin)
+------------------------------------------------------------
+
+toor@ip-172-31-10-214:~$ sudo adduser --disabled-password --gecos "" admin
+Adding user `admin' ...
+Adding new group `admin' (1002) ...
+Adding new user `admin' (1002) with group `admin (1002)' ...
+Creating home directory `/home/admin' ...
+Copying files from `/etc/skel' ...
+Adding new user `admin' to supplemental / extra groups `users' ...
+Adding user `admin' to group `users' ...
+
+
+------------------------------------------------------------
+Step 6: Create the alert checker script + initial run
+------------------------------------------------------------
+
+toor@ip-172-31-10-214:~$ sudo nano /usr/local/bin/failed_login_alert.sh
+
+toor@ip-172-31-10-214:~$ sudo chmod +x /usr/local/bin/failed_login_alert.sh
+
+toor@ip-172-31-10-214:~$ /usr/local/bin/failed_login_alert.sh
+[INFO] No alert triggered (count=0, threshold=5)
+
+
+------------------------------------------------------------
+Step 7: Simulate Failed Login Attempts (log simulation)
+------------------------------------------------------------
+
+toor@ip-172-31-10-214:~$ for i in {1..5}; do logger -t sshd "Failed password for invalid user testuser from 203.0.113.25 port 552$i ssh2"; done
+
+toor@ip-172-31-10-214:~$ journalctl --since "2 minutes ago" | grep "Failed password" | tail -n 5
+Feb 28 11:20:41 ip-172-31-10-214 sshd[2911]: Failed password for invalid user testuser from 203.0.113.25 port 5521 ssh2
+Feb 28 11:20:41 ip-172-31-10-214 sshd[2912]: Failed password for invalid user testuser from 203.0.113.25 port 5522 ssh2
+Feb 28 11:20:41 ip-172-31-10-214 sshd[2913]: Failed password for invalid user testuser from 203.0.113.25 port 5523 ssh2
+Feb 28 11:20:41 ip-172-31-10-214 sshd[2914]: Failed password for invalid user testuser from 203.0.113.25 port 5524 ssh2
+Feb 28 11:20:41 ip-172-31-10-214 sshd[2915]: Failed password for invalid user testuser from 203.0.113.25 port 5525 ssh2
+
+
+------------------------------------------------------------
+Step 8: Trigger Alert + Verify Email Delivery
+------------------------------------------------------------
+
+toor@ip-172-31-10-214:~$ /usr/local/bin/failed_login_alert.sh
+[INFO] Alert sent to admin (count=5)
+
+toor@ip-172-31-10-214:~$ sudo -u admin mail
+Mail version 8.1.2 01/15/2001.  Type ? for help.
+"/var/mail/admin": 1 message 1 new
+>N  1 toor@ip-172-31-10-214  Sat Feb 28 11:20  22/846  Alert: Failed Login Attempts
+& 
+
+& 1
+Message 1:
+From toor@ip-172-31-10-214 Sat Feb 28 11:20:43 2026
+Subject: Alert: Failed Login Attempts
+To: admin@ip-172-31-10-214
+
+There have been 5 failed login attempts in the last minute.
+
+& q
+Held 1 message in /var/mail/admin
+
+========================================
+Lab 14 Completed Successfully
+- SMTP relay configured (Postfix)
+- Alert rule defined and validated
+- Test alert generated via simulated failed logins
+- Email received and verified in local mailbox
+========================================
