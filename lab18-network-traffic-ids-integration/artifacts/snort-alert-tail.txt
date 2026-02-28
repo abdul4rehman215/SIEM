@@ -1,0 +1,8 @@
+[**] [1:1000001:1] ICMP test traffic detected [**]
+[Priority: 3]
+08/18-11:41:55.812345 172.31.10.214 -> 93.184.216.34 ICMP TTL:64 TOS:0x0 ID:39211 IpLen:20 DgmLen:84
+Type:8  Code:0  ID:1122   Seq:3  ECHO
+
+[**] [1:1000002:1] HTTP outbound request observed [**]
+[Priority: 3]
+08/18-11:42:01.122911 172.31.10.214:49312 -> 93.184.216.34:80 TCP TTL:64 TOS:0x0 ID:44990 IpLen:20 DgmLen:60 DF
