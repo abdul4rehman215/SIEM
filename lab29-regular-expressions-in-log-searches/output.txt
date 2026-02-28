@@ -1,0 +1,141 @@
+=========================================
+Lab 29 - Regular Expressions in Log Searches
+Execution Output Log
+=========================================
+
+-----------------------------------------
+Environment Setup
+-----------------------------------------
+toor@ip-172-31-10-247:~$ cat /etc/os-release
+PRETTY_NAME="Ubuntu 24.04.1 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.1 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+UBUNTU_CODENAME=noble
+
+toor@ip-172-31-10-247:~$ mkdir -p Lab_Regex_LogSearch && cd Lab_Regex_LogSearch
+toor@ip-172-31-10-247:~/Lab_Regex_LogSearch$
+
+toor@ip-172-31-10-247:~/Lab_Regex_LogSearch$ python3 --version
+Python 3.12.3
+
+-----------------------------------------
+Create Sample Log File for Practice
+-----------------------------------------
+toor@ip-172-31-10-247:~/Lab_Regex_LogSearch$ nano sample.log
+(Added realistic log content, then saved.)
+
+-----------------------------------------
+Confirm File Exists
+-----------------------------------------
+toor@ip-172-31-10-247:~/Lab_Regex_LogSearch$ ls -l sample.log
+-rw-r--r-- 1 toor toor 923 Aug 18 11:21 sample.log
+
+-----------------------------------------
+Task 1: Test IPv4 Regex Pattern (PCRE)
+-----------------------------------------
+toor@ip-172-31-10-247:~/Lab_Regex_LogSearch$ grep -oP '\b(?:\d{1,3}\.){3}\d{1,3}\b' sample.log
+192.168.1.10
+10.0.2.15
+203.0.113.50
+198.51.100.23
+172.16.5.44
+192.168.1.300
+8.8.8.8
+203.0.113.50
+10.0.2.15
+192.168.1.10
+192.0.2.99
+127.0.0.1
+10.0.2.15
+
+-----------------------------------------
+Observation
+-----------------------------------------
+- The simple IPv4 regex matched 192.168.1.300 even though it is not a valid IPv4 octet range (0–255).
+- This is expected for basic IPv4 regex patterns; strict validation requires a more advanced pattern or post-processing.
+
+-----------------------------------------
+Task 2.1: Extract User IDs (user-### / ID-###)
+-----------------------------------------
+toor@ip-172-31-10-247:~/Lab_Regex_LogSearch$ grep -oP '\b(user|ID)-\d+\b' sample.log
+user-123
+ID-456
+user-123
+ID-789
+user-555
+user-999
+ID-456
+ID-456
+ID-456
+
+-----------------------------------------
+Unique IDs Only (Reporting-Friendly)
+-----------------------------------------
+toor@ip-172-31-10-247:~/Lab_Regex_LogSearch$ grep -oP '\b(user|ID)-\d+\b' sample.log | sort -u
+ID-456
+ID-789
+user-123
+user-555
+user-999
+
+-----------------------------------------
+Task 2.2: Extract Error Codes ([error code: XYZ])
+-----------------------------------------
+toor@ip-172-31-10-247:~/Lab_Regex_LogSearch$ grep -oP '\[error code:\s*[A-Z]+\]' sample.log
+[error code: AUTH]
+[error code: DENIED]
+[error code: TIMEOUT]
+[error code: DBFAIL]
+[error code: AUTH]
+[error code: DENIED]
+
+-----------------------------------------
+Unique Error Codes Only
+-----------------------------------------
+toor@ip-172-31-10-247:~/Lab_Regex_LogSearch$ grep -oP '\[error code:\s*[A-Z]+\]' sample.log | sort -u
+[error code: AUTH]
+[error code: DBFAIL]
+[error code: DENIED]
+[error code: TIMEOUT]
+
+-----------------------------------------
+Task 3: Python Script to Print Lines With Error Codes
+-----------------------------------------
+toor@ip-172-31-10-247:~/Lab_Regex_LogSearch$ nano extract_error_lines.py
+(Added the Python script from the lab, then saved.)
+
+toor@ip-172-31-10-247:~/Lab_Regex_LogSearch$ python3 extract_error_lines.py
+Jul 15 10:01:42 web-1 app[2201]: user login failed ID-456 from 10.0.2.15 [error code: AUTH]
+Jul 15 10:05:03 web-1 app[2201]: invalid password attempt user-123 from 203.0.113.50 [error code: DENIED]
+Jul 15 10:08:29 api-2 service[4410]: request timeout for ID-789 from 198.51.100.23 [error code: TIMEOUT]
+Jul 15 10:12:18 db-1 mysqld[990]: connection error from 192.168.1.300 (invalid ip) [error code: DBFAIL]
+Jul 15 11:05:19 web-1 app[2201]: user login failed user-999 from 192.168.1.10 [error code: AUTH]
+Jul 15 11:06:44 api-2 service[4410]: unauthorized access attempt ID-456 from 192.0.2.99 [error code: DENIED]
+
+-----------------------------------------
+Verified
+-----------------------------------------
+- Script outputs only lines containing [error code: ...].
+
+-----------------------------------------
+Editor Regex Highlighting (Performed)
+-----------------------------------------
+- Opened sample.log in editor (VS Code-style workflow)
+- Ctrl+F -> enabled regex mode (.*)
+- Tested patterns:
+  - IP regex: \b(?:\d{1,3}\.){3}\d{1,3}\b
+  - User ID regex: \b(user|ID)-\d+\b
+  - Error code regex: \[error code:\s*[A-Z]+\]
+- Observed automatic highlighting of matches across the file
+
+=========================================
+Lab 29 Completed Successfully
+=========================================
+✔ Built and tested regex patterns for IPs, user IDs, and error codes
+✔ Extracted and deduplicated matches using grep + sort
+✔ Automated extraction using a Python regex script
+✔ Practiced editor-based regex highlighting workflow
