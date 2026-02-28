@@ -1,0 +1,10 @@
+# getfacl /var/restricted (excerpt)
+
+# file: var/restricted
+# owner: admin_user
+# group: admin
+user::rwx
+user:analyst_user:r-x
+group::rwx
+mask::rwx
+other::---
