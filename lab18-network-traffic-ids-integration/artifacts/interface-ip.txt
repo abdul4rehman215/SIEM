@@ -1,0 +1,4 @@
+2: ens5: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9001 qdisc mq state UP group default qlen 1000
+    link/ether 0a:9f:2c:41:7b:19 brd ff:ff:ff:ff:ff:ff
+    inet 172.31.10.214/20 brd 172.31.15.255 scope global dynamic ens5
+       valid_lft 3357sec preferred_lft 3357sec
