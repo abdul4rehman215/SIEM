@@ -8,3 +8,9 @@ Change made (per lab instruction):
 
 ```conf
 include $RULE_PATH/community.rules
+```
+## Why this matters:
+
+Community rules provide basic, known threat signatures.
+This enables Snort to load additional detection rules beyond the default ruleset.
+If the include path is incorrect or commented out, Snort may run with fewer rules and miss detections.
