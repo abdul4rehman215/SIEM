@@ -1,0 +1,6 @@
+table_name |      index_name       | times_index_used
+-----------+------------------------+-----------------
+app_logs   | idx_app_logs_severity  |               2
+app_logs   | idx_app_logs_ts        |               1
+app_logs   | app_logs_pkey          |               0
+(3 rows)
