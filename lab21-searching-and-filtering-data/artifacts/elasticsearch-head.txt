@@ -1,0 +1,5 @@
+{
+  "name" : "ip-172-31-10-206",
+  "cluster_name" : "elasticsearch",
+  "cluster_uuid" : "vYkWJpZqQz-2nK8rQ3xg2A",
+  "version" : {
