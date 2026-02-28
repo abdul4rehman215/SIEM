@@ -1,0 +1,2 @@
+total 0
+-rw-r--r-- 1 root root 0 Feb 28 12:19 log_5_days.log
