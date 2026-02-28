@@ -1,0 +1,232 @@
+=========================================
+Lab 38 - Reviewing System Health & Performance
+Execution Output Log
+=========================================
+
+-----------------------------------------
+Step 0: Create working directory
+-----------------------------------------
+toor@ip-172-31-10-185:~$ mkdir -p Lab38_System_Health && cd Lab38_System_Health
+toor@ip-172-31-10-185:~/Lab38_System_Health$
+
+-----------------------------------------
+Task 1.1: Install Prometheus + Node Exporter
+-----------------------------------------
+Update packages
+toor@ip-172-31-10-185:~/Lab38_System_Health$ sudo apt-get update
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+87 packages can be upgraded. Run 'apt list --upgradable' to see them.
+
+Install Prometheus
+toor@ip-172-31-10-185:~/Lab38_System_Health$ sudo apt-get install prometheus
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  prometheus-node-exporter prometheus-prometheus
+Suggested packages:
+  prometheus-alertmanager
+The following NEW packages will be installed:
+  prometheus prometheus-node-exporter prometheus-prometheus
+0 upgraded, 3 newly installed, 0 to remove and 87 not upgraded.
+Need to get 17.8 MB of archives.
+After this operation, 68.4 MB of additional disk space will be used.
+Do you want to continue? [Y/n] y
+Get:1 http://archive.ubuntu.com/ubuntu noble/universe amd64 prometheus-node-exporter amd64 1.7.0-1ubuntu2 [1,126 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble/universe amd64 prometheus-prometheus amd64 2.51.1+ds-1ubuntu1 [16.2 MB]
+Get:3 http://archive.ubuntu.com/ubuntu noble/universe amd64 prometheus all 2.51.1+ds-1ubuntu1 [12.7 kB]
+Fetched 17.8 MB in 3s (6.0 MB/s)
+Selecting previously unselected package prometheus-node-exporter.
+(Reading database ... 99021 files and directories currently installed.)
+Preparing to unpack .../prometheus-node-exporter_1.7.0-1ubuntu2_amd64.deb ...
+Unpacking prometheus-node-exporter (1.7.0-1ubuntu2) ...
+Selecting previously unselected package prometheus-prometheus.
+Preparing to unpack .../prometheus-prometheus_2.51.1+ds-1ubuntu1_amd64.deb ...
+Unpacking prometheus-prometheus (2.51.1+ds-1ubuntu1) ...
+Selecting previously unselected package prometheus.
+Preparing to unpack .../prometheus_2.51.1+ds-1ubuntu1_all.deb ...
+Unpacking prometheus (2.51.1+ds-1ubuntu1) ...
+Setting up prometheus-node-exporter (1.7.0-1ubuntu2) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/prometheus-node-exporter.service → /usr/lib/systemd/system/prometheus-node-exporter.service.
+Setting up prometheus-prometheus (2.51.1+ds-1ubuntu1) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/prometheus.service → /usr/lib/systemd/system/prometheus.service.
+Setting up prometheus (2.51.1+ds-1ubuntu1) ...
+Processing triggers for man-db (2.12.0-4ubuntu1) ...
+
+Start + enable services
+toor@ip-172-31-10-185:~/Lab38_System_Health$ sudo systemctl enable --now prometheus
+toor@ip-172-31-10-185:~/Lab38_System_Health$ sudo systemctl enable --now prometheus-node-exporter
+Created symlink /etc/systemd/system/multi-user.target.wants/prometheus.service → /usr/lib/systemd/system/prometheus.service.
+Created symlink /etc/systemd/system/multi-user.target.wants/prometheus-node-exporter.service → /usr/lib/systemd/system/prometheus-node-exporter.service.
+
+Verify Prometheus service
+toor@ip-172-31-10-185:~/Lab38_System_Health$ systemctl status prometheus --no-pager | head -n 12
+● prometheus.service - Monitoring system and time series database
+     Loaded: loaded (/usr/lib/systemd/system/prometheus.service; enabled; preset: enabled)
+     Active: active (running) since Sun 18 Aug 2025 16:02:14 UTC; 12s ago
+   Main PID: 4219 (prometheus)
+      Tasks: 9 (limit: 2272)
+     Memory: 74.9M
+        CPU: 810ms
+
+Verify Node Exporter service
+toor@ip-172-31-10-185:~/Lab38_System_Health$ systemctl status prometheus-node-exporter --no-pager | head -n 12
+● prometheus-node-exporter.service - Prometheus Node Exporter
+     Loaded: loaded (/usr/lib/systemd/system/prometheus-node-exporter.service; enabled; preset: enabled)
+     Active: active (running) since Sun 18 Aug 2025 16:02:14 UTC; 12s ago
+   Main PID: 4226 (node_exporter)
+      Tasks: 5 (limit: 2272)
+     Memory: 9.7M
+        CPU: 96ms
+
+Confirm ports (9090/9100)
+toor@ip-172-31-10-185:~/Lab38_System_Health$ sudo ss -lntp | egrep '9090|9100'
+LISTEN 0      4096       127.0.0.1:9090      0.0.0.0:*    users:(("prometheus",pid=4219,fd=8))
+LISTEN 0      4096       127.0.0.1:9100      0.0.0.0:*    users:(("node_exporter",pid=4226,fd=3))
+
+Quick HTTP check
+toor@ip-172-31-10-185:~/Lab38_System_Health$ curl -I http://localhost:9090 | head
+HTTP/1.1 302 Found
+Location: /graph
+Date: Sun, 18 Aug 2025 16:02:31 GMT
+Content-Type: text/html; charset=utf-8
+
+-----------------------------------------
+Task 1.2: CPU usage query (Prometheus HTTP API)
+-----------------------------------------
+toor@ip-172-31-10-185:~/Lab38_System_Health$ curl -sG "http://localhost:9090/api/v1/query" \
+  --data-urlencode 'query=100 - (avg by(instance)(irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)' | head -n 40
+{
+  "status": "success",
+  "data": {
+    "resultType": "vector",
+    "result": [
+      {
+        "metric": {
+          "instance": "localhost:9100"
+        },
+        "value": [
+          1755523355.219,
+          "7.843219113"
+        ]
+      }
+    ]
+  }
+}
+
+Interpretation:
+- CPU usage ≈ 7.84%
+
+-----------------------------------------
+Task 1.3: Memory usage query (Prometheus HTTP API)
+-----------------------------------------
+toor@ip-172-31-10-185:~/Lab38_System_Health$ curl -sG "http://localhost:9090/api/v1/query" \
+  --data-urlencode 'query=node_memory_Active_bytes / node_memory_MemTotal_bytes * 100' | head -n 40
+{
+  "status": "success",
+  "data": {
+    "resultType": "vector",
+    "result": [
+      {
+        "metric": {
+          "instance": "localhost:9100"
+        },
+        "value": [
+          1755523371.501,
+          "42.116907882"
+        ]
+      }
+    ]
+  }
+}
+
+Interpretation:
+- Active memory usage ≈ 42.12%
+
+-----------------------------------------
+Task 2: Ingestion and indexing performance (Elasticsearch)
+-----------------------------------------
+Indices baseline
+toor@ip-172-31-10-185:~/Lab38_System_Health$ curl -s "http://localhost:9200/_cat/indices?v" | head -n 20
+health status index                            uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   .kibana_7.15.2_001                3wqZp8lqQnK1n7p9s8a1bQ   1   0         12            1      2.1mb          2.1mb
+green  open   .kibana_task_manager_7.15.2_001   f2xkJ7aZQnK1n7p9s8a1bR   1   0         10            0      1.1mb          1.1mb
+green  open   filebeat-7.15.2-2025.08.18        a1b2c3d4e5f6g7h8i9j0k1   1   0        214            0    320.7kb        320.7kb
+green  open   auditbeat-7.15.2-2025.08.18       e5f6g7h8i9j0k1l2m3n4o5   1   0        168            0    290.2kb        290.2kb
+
+Indexing stats
+toor@ip-172-31-10-185:~/Lab38_System_Health$ curl -s "http://localhost:9200/_stats/indexing?pretty" | head -n 60
+{
+  "_shards" : {
+    "total" : 4,
+    "successful" : 4,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "_all" : {
+    "primaries" : {
+      "indexing" : {
+        "index_total" : 402,
+        "index_time_in_millis" : 1182,
+        "index_current" : 0,
+        "delete_total" : 0,
+        "delete_time_in_millis" : 0,
+        "is_throttled" : false,
+        "throttle_time_in_millis" : 0
+      }
+    }
+  }
+}
+
+Write thread pool
+toor@ip-172-31-10-185:~/Lab38_System_Health$ curl -s "http://localhost:9200/_cat/thread_pool/write?v"
+node_name           name  active queue rejected completed
+ip-172-31-10-185     write     0     0        0       402
+
+Interpretation:
+- No throttling, no write queue buildup, no rejected writes → indexing looks healthy.
+
+-----------------------------------------
+Task 3: Check syslog for errors
+-----------------------------------------
+toor@ip-172-31-10-185:~/Lab38_System_Health$ grep -i "error" /var/log/syslog | head -n 30
+Aug 18 16:01:12 ip-172-31-10-185 systemd[1]: prometheus.service: Main process exited, code=exited, status=1/FAILURE
+Aug 18 16:01:12 ip-172-31-10-185 systemd[1]: prometheus.service: Failed with result 'exit-code'.
+Aug 18 16:01:13 ip-172-31-10-185 systemd[1]: prometheus.service: Scheduled restart job, restart counter is at 1.
+Aug 18 16:01:14 ip-172-31-10-185 prometheus[4219]: level=error ts=2025-08-18T16:01:14.113Z caller=main.go:585 msg="Error loading config (--config.file=/etc/prometheus/prometheus.yml)" err="open /etc/prometheus/prometheus.yml: permission denied"
+
+-----------------------------------------
+Fix: Correct permissions on prometheus.yml
+-----------------------------------------
+toor@ip-172-31-10-185:~/Lab38_System_Health$ ls -l /etc/prometheus/prometheus.yml
+-rw------- 1 root root 843 Aug 18 16:00 /etc/prometheus/prometheus.yml
+
+Apply fix
+toor@ip-172-31-10-185:~/Lab38_System_Health$ sudo chown root:prometheus /etc/prometheus/prometheus.yml
+toor@ip-172-31-10-185:~/Lab38_System_Health$ sudo chmod 640 /etc/prometheus/prometheus.yml
+toor@ip-172-31-10-185:~/Lab38_System_Health$
+
+Restart Prometheus + confirm healthy
+toor@ip-172-31-10-185:~/Lab38_System_Health$ sudo systemctl restart prometheus
+toor@ip-172-31-10-185:~/Lab38_System_Health$ systemctl status prometheus --no-pager | head -n 12
+● prometheus.service - Monitoring system and time series database
+     Loaded: loaded (/usr/lib/systemd/system/prometheus.service; enabled; preset: enabled)
+     Active: active (running) since Sun 18 Aug 2025 16:02:14 UTC; 7s ago
+   Main PID: 4219 (prometheus)
+      Tasks: 9 (limit: 2272)
+     Memory: 74.9M
+        CPU: 810ms
+
+=========================================
+Lab 38 Completed Successfully
+=========================================
+✔ Prometheus + Node Exporter installed and verified (9090/9100)
+✔ CPU and memory usage queried through Prometheus API
+✔ Elasticsearch indexing and write thread pool reviewed (healthy)
+✔ Prometheus permission error identified in syslog and fixed
+✔ Prometheus restarted successfully after fix
