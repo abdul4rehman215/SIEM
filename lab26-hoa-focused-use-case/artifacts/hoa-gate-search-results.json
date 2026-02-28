@@ -1,0 +1,37 @@
+{
+  "hits": {
+    "total": { "value": 3, "relation": "eq" },
+    "hits": [
+      {
+        "_source": {
+          "@timestamp": "2023-09-16T01:30:00.000Z",
+          "gate": "Gate1",
+          "user": "User789",
+          "direction": "Entry",
+          "hour": 1,
+          "tags": ["unusual_activity"]
+        }
+      },
+      {
+        "_source": {
+          "@timestamp": "2023-09-15T01:00:00.000Z",
+          "gate": "Gate2",
+          "user": "User456",
+          "direction": "Exit",
+          "hour": 1,
+          "tags": ["unusual_activity"]
+        }
+      },
+      {
+        "_source": {
+          "@timestamp": "2023-09-15T00:45:00.000Z",
+          "gate": "Gate1",
+          "user": "User123",
+          "direction": "Entry",
+          "hour": 0,
+          "tags": ["unusual_activity"]
+        }
+      }
+    ]
+  }
+}
