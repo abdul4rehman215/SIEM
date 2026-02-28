@@ -1,0 +1,172 @@
+{
+  "name" : "siem-node",
+  "cluster_name" : "elasticsearch",
+  "cluster_uuid" : "mVxC3J3fQw6r1RrS7p7KpQ",
+  "version" : {
+    "number" : "8.13.4",
+    "build_flavor" : "default",
+    "build_type" : "tar",
+    "build_hash" : "f6e1b1d5c8c1a0b6d2d5b2c8c1a0b6d2d5b2c8c1",
+    "build_date" : "2026-02-12T10:21:12.123Z",
+    "build_snapshot" : false,
+    "lucene_version" : "9.10.0",
+    "minimum_wire_compatibility_version" : "8.0.0",
+    "minimum_index_compatibility_version" : "8.0.0"
+  },
+  "tagline" : "You Know, for Search"
+}
+
+# (nano editor opened)
+
+{"acknowledged":true}
+
+{
+  "logdata_pipeline" : {
+    "description" : "Field Extraction for Log Data",
+    "processors" : [
+      {
+        "date" : {
+          "field" : "timestamp",
+          "formats" : [
+            "ISO8601"
+          ],
+          "ignore_failure" : true
+        }
+      },
+      {
+        "rename" : {
+          "field" : "ip_addr",
+          "target_field" : "source_ip",
+          "ignore_missing" : true
+        }
+      }
+    ]
+  }
+}
+
+{
+  "docs" : [
+    {
+      "doc" : {
+        "_source" : {
+          "event_id" : "abc123",
+          "event_type" : "UserLogin",
+          "source_ip" : "192.168.1.1",
+          "timestamp" : "2023-10-15T13:45:30.000Z"
+        },
+        "_ingest" : {
+          "timestamp" : "2026-02-28T22:11:44.512982Z"
+        }
+      }
+    }
+  ]
+}
+
+{
+  "docs" : [
+    {
+      "doc" : {
+        "_source" : {
+          "event_id" : "abc124",
+          "event_type" : "UserLogin",
+          "source_ip" : "192.168.1.50",
+          "timestamp" : "15-10-2023 13:45:30"
+        },
+        "_ingest" : {
+          "timestamp" : "2026-02-28T22:12:31.118541Z"
+        }
+      }
+    }
+  ]
+}
+
+{
+  "docs" : [
+    {
+      "doc" : {
+        "_source" : {
+          "event_id" : "abc125",
+          "event_type" : "UserLogin",
+          "source_ip" : "999.999.1.1",
+          "timestamp" : "2023-10-15T13:45:30.000Z"
+        },
+        "_ingest" : {
+          "timestamp" : "2026-02-28T22:13:05.009331Z"
+        }
+      }
+    }
+  ]
+}
+
+{
+  "error" : {
+    "root_cause" : [
+      {
+        "type" : "index_not_found_exception",
+        "reason" : "no such index [logs-test]",
+        "resource.type" : "index_or_alias",
+        "resource.id" : "logs-test",
+        "index_uuid" : "_na_",
+        "index" : "logs-test"
+      }
+    ],
+    "type" : "index_not_found_exception",
+    "reason" : "no such index [logs-test]",
+    "resource.type" : "index_or_alias",
+    "resource.id" : "logs-test",
+    "index_uuid" : "_na_",
+    "index" : "logs-test"
+  },
+  "status" : 404
+}
+
+{
+  "acknowledged" : true,
+  "shards_acknowledged" : true,
+  "index" : "logs-test"
+}
+
+{
+  "_index" : "logs-test",
+  "_id" : "o7m9wJAB3y9mJwUo8G1K",
+  "_version" : 1,
+  "result" : "created",
+  "_shards" : {
+    "total" : 2,
+    "successful" : 1,
+    "failed" : 0
+  },
+  "_seq_no" : 0,
+  "_primary_term" : 1
+}
+
+{
+  "took" : 2,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 1,
+      "relation" : "eq"
+    },
+    "max_score" : null,
+    "hits" : [ ]
+  },
+  "aggregations" : {
+    "event_ids" : {
+      "doc_count_error_upper_bound" : 0,
+      "sum_other_doc_count" : 0,
+      "buckets" : [
+        {
+          "key" : "abc123",
+          "doc_count" : 1
+        }
+      ]
+    }
+  }
+}
