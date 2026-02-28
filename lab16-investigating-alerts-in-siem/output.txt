@@ -1,0 +1,187 @@
+========================================
+Lab 16 - Investigating Alerts in a SIEM System
+Execution Output Log
+Environment: Ubuntu 24.04.1 LTS (Cloud Lab)
+User: toor
+========================================
+
+------------------------------------------------------------
+Step 0: Confirm environment + working directory
+------------------------------------------------------------
+
+toor@ip-172-31-10-241:~$ cat /etc/os-release
+PRETTY_NAME="Ubuntu 24.04.1 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.1 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+
+toor@ip-172-31-10-241:~$ pwd
+/home/toor
+
+toor@ip-172-31-10-241:~$ mkdir -p lab_investigating_alerts && cd lab_investigating_alerts
+
+toor@ip-172-31-10-241:~/lab_investigating_alerts$ pwd
+/home/toor/lab_investigating_alerts
+
+
+------------------------------------------------------------
+Task 1: Install jq (for JSON filtering like Kibana-style searching)
+------------------------------------------------------------
+
+toor@ip-172-31-10-241:~/lab_investigating_alerts$ sudo apt update
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://security.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+All packages are up to date.
+
+toor@ip-172-31-10-241:~/lab_investigating_alerts$ sudo apt install -y jq
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following NEW packages will be installed:
+  jq libjq1
+0 upgraded, 2 newly installed, 0 to remove and 0 not upgraded.
+Need to get 338 kB of archives.
+After this operation, 1,095 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble/main amd64 libjq1 amd64 1.7.1-3ubuntu0.1 [134 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble/main amd64 jq amd64 1.7.1-3ubuntu0.1 [204 kB]
+Fetched 338 kB in 0s (1,120 kB/s)
+Selecting previously unselected package libjq1:amd64.
+(Reading database ... 74218 files and directories currently installed.)
+Preparing to unpack .../libjq1_1.7.1-3ubuntu0.1_amd64.deb ...
+Unpacking libjq1:amd64 (1.7.1-3ubuntu0.1) ...
+Selecting previously unselected package jq.
+Preparing to unpack .../jq_1.7.1-3ubuntu0.1_amd64.deb ...
+Unpacking jq (1.7.1-3ubuntu0.1) ...
+Setting up libjq1:amd64 (1.7.1-3ubuntu0.1) ...
+Setting up jq (1.7.1-3ubuntu0.1) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.3) ...
+
+
+------------------------------------------------------------
+Create an alerts file (as if exported from SIEM)
+------------------------------------------------------------
+
+toor@ip-172-31-10-241:~/lab_investigating_alerts$ nano alerts.jsonl
+
+toor@ip-172-31-10-241:~/lab_investigating_alerts$ wc -l alerts.jsonl
+5 alerts.jsonl
+
+
+------------------------------------------------------------
+Task 1: View all alerts quickly (like SIEM alert list)
+------------------------------------------------------------
+
+toor@ip-172-31-10-241:~/lab_investigating_alerts$ jq -r '"\(.["@timestamp"]) | \(.["alert.id"]) | \(.["alert.category"]) | severity=\(.["alert.severity"]) | user=\(.["user.name"] // "-") | src_ip=\(.["source.ip"])"' alerts.jsonl
+2026-02-28T10:12:10Z | a-1001 | suspicious_login | severity=high | user=jdoe | src_ip=192.168.1.100
+2026-02-28T10:13:02Z | a-1002 | malware | severity=critical | user=- | src_ip=203.0.113.77
+2026-02-28T10:14:20Z | a-1003 | suspicious_login | severity=medium | user=analyst | src_ip=198.51.100.25
+2026-02-28T10:16:44Z | a-1004 | network_scan | severity=low | user=- | src_ip=203.0.113.200
+2026-02-28T10:18:11Z | a-1005 | suspicious_login | severity=high | user=jdoe | src_ip=192.168.1.100
+
+
+------------------------------------------------------------
+Task 1.3: Filter Alerts (category suspicious_login)
+------------------------------------------------------------
+
+toor@ip-172-31-10-241:~/lab_investigating_alerts$ jq -c 'select(.["alert.category"]=="suspicious_login")' alerts.jsonl
+{"@timestamp":"2026-02-28T10:12:10Z","alert.id":"a-1001","alert.category":"suspicious_login","alert.severity":"high","rule.name":"Suspicious Login - Unusual Geo","user.name":"jdoe","source.ip":"192.168.1.100","source.geo.country":"Unknown","event.action":"login_attempt","event.outcome":"failed","message":"Login attempt from unusual location","tags":["security_analytics","authentication"]}
+{"@timestamp":"2026-02-28T10:14:20Z","alert.id":"a-1003","alert.category":"suspicious_login","alert.severity":"medium","rule.name":"Suspicious Login - Unusual Time","user.name":"analyst","source.ip":"198.51.100.25","source.geo.country":"US","event.action":"login_attempt","event.outcome":"success","message":"Login at unusual time for user baseline","tags":["security_analytics","authentication"]}
+{"@timestamp":"2026-02-28T10:18:11Z","alert.id":"a-1005","alert.category":"suspicious_login","alert.severity":"high","rule.name":"Brute Force Suspected","user.name":"jdoe","source.ip":"192.168.1.100","event.action":"login_attempt","event.outcome":"failed","message":"Multiple failed authentication attempts detected","tags":["security_analytics","authentication","bruteforce"]}
+
+toor@ip-172-31-10-241:~/lab_investigating_alerts$ jq -r 'select(.["alert.category"]=="suspicious_login") | "\(.["alert.id"]) | \(.["@timestamp"]) | \(.["rule.name"]) | user=\(.["user.name"]) | ip=\(.["source.ip"]) | outcome=\(.["event.outcome"])"' alerts.jsonl
+a-1001 | 2026-02-28T10:12:10Z | Suspicious Login - Unusual Geo | user=jdoe | ip=192.168.1.100 | outcome=failed
+a-1003 | 2026-02-28T10:14:20Z | Suspicious Login - Unusual Time | user=analyst | ip=198.51.100.25 | outcome=success
+a-1005 | 2026-02-28T10:18:11Z | Brute Force Suspected | user=jdoe | ip=192.168.1.100 | outcome=failed
+
+
+------------------------------------------------------------
+Task 2: Drill Down to the Raw Events (alert a-1001)
+------------------------------------------------------------
+
+toor@ip-172-31-10-241:~/lab_investigating_alerts$ jq 'select(.["alert.id"]=="a-1001")' alerts.jsonl
+{
+  "@timestamp": "2026-02-28T10:12:10Z",
+  "alert.id": "a-1001",
+  "alert.category": "suspicious_login",
+  "alert.severity": "high",
+  "rule.name": "Suspicious Login - Unusual Geo",
+  "user.name": "jdoe",
+  "source.ip": "192.168.1.100",
+  "source.geo.country": "Unknown",
+  "event.action": "login_attempt",
+  "event.outcome": "failed",
+  "message": "Login attempt from unusual location",
+  "tags": [
+    "security_analytics",
+    "authentication"
+  ]
+}
+
+toor@ip-172-31-10-241:~/lab_investigating_alerts$ jq -r 'select(.["alert.id"]=="a-1001") | "time=\(.["@timestamp"]) | user=\(.["user.name"]) | src_ip=\(.["source.ip"]) | geo=\(.["source.geo.country"] // "n/a") | outcome=\(.["event.outcome"]) | rule=\(.["rule.name"])"' alerts.jsonl
+time=2026-02-28T10:12:10Z | user=jdoe | src_ip=192.168.1.100 | geo=Unknown | outcome=failed | rule=Suspicious Login - Unusual Geo
+
+
+------------------------------------------------------------
+Pivot Investigation: Does this source IP appear in multiple alerts?
+------------------------------------------------------------
+
+toor@ip-172-31-10-241:~/lab_investigating_alerts$ jq -r 'select(.["source.ip"]=="192.168.1.100") | "\(.["alert.id"]) | \(.["@timestamp"]) | \(.["rule.name"]) | user=\(.["user.name"] // "-") | outcome=\(.["event.outcome"] // "-")"' alerts.jsonl
+a-1001 | 2026-02-28T10:12:10Z | Suspicious Login - Unusual Geo | user=jdoe | outcome=failed
+a-1005 | 2026-02-28T10:18:11Z | Brute Force Suspected | user=jdoe | outcome=failed
+
+toor@ip-172-31-10-241:~/lab_investigating_alerts$ jq -r 'select(.["source.ip"]=="192.168.1.100") | "\(.["@timestamp"]) \(.["alert.id"]) \(.["message"])"' alerts.jsonl | sort
+2026-02-28T10:12:10Z a-1001 Login attempt from unusual location
+2026-02-28T10:18:11Z a-1005 Multiple failed authentication attempts detected
+
+
+------------------------------------------------------------
+Task 3: Create Investigation Report (Markdown)
+------------------------------------------------------------
+
+toor@ip-172-31-10-241:~/lab_investigating_alerts$ nano investigation_report.md
+
+toor@ip-172-31-10-241:~/lab_investigating_alerts$ ls -l
+total 8
+-rw-r--r-- 1 toor toor 1174 Feb 28 12:01 alerts.jsonl
+-rw-r--r-- 1 toor toor 1041 Feb 28 12:06 investigation_report.md
+
+toor@ip-172-31-10-241:~/lab_investigating_alerts$ head -n 20 investigation_report.md
+# SIEM Alert Investigation Report
+
+## Alert Investigated
+- Alert ID: a-1001
+- Category: suspicious_login
+- Severity: high
+- Rule Name: Suspicious Login - Unusual Geo
+
+## Key Fields (Raw Event Extract)
+- Timestamp: 2026-02-28T10:12:10Z
+- User: jdoe
+- Source IP: 192.168.1.100
+- Geo Country: Unknown
+- Action: login_attempt
+- Outcome: failed
+- Message: Login attempt from unusual location
+
+
+========================================
+Lab 16 Completed Successfully
+- Created a SIEM-like alerts dataset (JSONL)
+- Filtered alerts using jq (category suspicious_login)
+- Drilled into alert a-1001 to view raw JSON
+- Pivoted on source IP to find related alerts
+- Documented investigation findings + next steps in report
+========================================
