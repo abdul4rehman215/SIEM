@@ -1,0 +1,162 @@
+=========================================
+Lab 31 - File Integrity Monitoring (FIM) with auditd
+Execution Output Log
+=========================================
+
+-----------------------------------------
+Environment Check (Ubuntu used)
+-----------------------------------------
+toor@ip-172-31-10-166:~$ cat /etc/os-release
+PRETTY_NAME="Ubuntu 24.04.1 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.1 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+UBUNTU_CODENAME=noble
+
+-----------------------------------------
+Install auditd (Ubuntu)
+-----------------------------------------
+toor@ip-172-31-10-166:~$ sudo apt-get update
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+87 packages can be upgraded. Run 'apt list --upgradable' to see them.
+
+toor@ip-172-31-10-166:~$ sudo apt-get install auditd audispd-plugins
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  audispd-plugins-common libauparse0 libaudit-common libaudit1
+Suggested packages:
+  audispd-plugins
+The following NEW packages will be installed:
+  audispd-plugins audispd-plugins-common auditd libauparse0 libaudit-common libaudit1
+0 upgraded, 6 newly installed, 0 to remove and 87 not upgraded.
+Need to get 1,142 kB of archives.
+After this operation, 3,982 kB of additional disk space will be used.
+Do you want to continue? [Y/n] y
+Get:1 http://archive.ubuntu.com/ubuntu noble/main amd64 libaudit-common all 1:3.1.2-2ubuntu1 [10.7 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble/main amd64 libaudit1 amd64 1:3.1.2-2ubuntu1 [55.4 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble/main amd64 libauparse0 amd64 1:3.1.2-2ubuntu1 [51.9 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble/main amd64 auditd amd64 1:3.1.2-2ubuntu1 [287 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble/main amd64 audispd-plugins-common amd64 1:3.1.2-2ubuntu1 [80.1 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble/main amd64 audispd-plugins amd64 1:3.1.2-2ubuntu1 [657 kB]
+Fetched 1,142 kB in 1s (1,095 kB/s)
+Selecting previously unselected package libaudit-common.
+(Reading database ... 98722 files and directories currently installed.)
+Preparing to unpack .../libaudit-common_1%3a3.1.2-2ubuntu1_all.deb ...
+Unpacking libaudit-common (1:3.1.2-2ubuntu1) ...
+Selecting previously unselected package libaudit1:amd64.
+Preparing to unpack .../libaudit1_1%3a3.1.2-2ubuntu1_amd64.deb ...
+Unpacking libaudit1:amd64 (1:3.1.2-2ubuntu1) ...
+Selecting previously unselected package libauparse0:amd64.
+Preparing to unpack .../libauparse0_1%3a3.1.2-2ubuntu1_amd64.deb ...
+Unpacking libauparse0:amd64 (1:3.1.2-2ubuntu1) ...
+Selecting previously unselected package auditd.
+Preparing to unpack .../auditd_1%3a3.1.2-2ubuntu1_amd64.deb ...
+Unpacking auditd (1:3.1.2-2ubuntu1) ...
+Selecting previously unselected package audispd-plugins-common.
+Preparing to unpack .../audispd-plugins-common_1%3a3.1.2-2ubuntu1_amd64.deb ...
+Unpacking audispd-plugins-common (1:3.1.2-2ubuntu1) ...
+Selecting previously unselected package audispd-plugins.
+Preparing to unpack .../audispd-plugins_1%3a3.1.2-2ubuntu1_amd64.deb ...
+Unpacking audispd-plugins (1:3.1.2-2ubuntu1) ...
+Setting up libaudit-common (1:3.1.2-2ubuntu1) ...
+Setting up libaudit1:amd64 (1:3.1.2-2ubuntu1) ...
+Setting up libauparse0:amd64 (1:3.1.2-2ubuntu1) ...
+Setting up auditd (1:3.1.2-2ubuntu1) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/auditd.service → /usr/lib/systemd/system/auditd.service.
+Setting up audispd-plugins-common (1:3.1.2-2ubuntu1) ...
+Setting up audispd-plugins (1:3.1.2-2ubuntu1) ...
+Processing triggers for man-db (2.12.0-4ubuntu1) ...
+
+-----------------------------------------
+Start + Enable auditd Service
+-----------------------------------------
+toor@ip-172-31-10-166:~$ sudo systemctl start auditd
+toor@ip-172-31-10-166:~$ sudo systemctl enable auditd
+Synchronizing state of auditd.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
+Executing: /usr/lib/systemd/systemd-sysv-install enable auditd
+
+-----------------------------------------
+Quick Status Check
+-----------------------------------------
+toor@ip-172-31-10-166:~$ systemctl status auditd --no-pager | head -n 12
+● auditd.service - Security Auditing Service
+     Loaded: loaded (/usr/lib/systemd/system/auditd.service; enabled; preset: enabled)
+     Active: active (running) since Sun 18 Aug 2025 12:05:11 UTC; 8s ago
+       Docs: man:auditd(8)
+             https://github.com/linux-audit/audit-userspace
+   Main PID: 3124 (auditd)
+      Tasks: 2 (limit: 2272)
+     Memory: 3.6M
+        CPU: 58ms
+
+-----------------------------------------
+Verify Installation (auditctl version)
+-----------------------------------------
+toor@ip-172-31-10-166:~$ auditctl -v
+auditctl version 3.1.2
+
+-----------------------------------------
+Identify File to Monitor
+-----------------------------------------
+toor@ip-172-31-10-166:~$ ls -l /etc/passwd
+-rw-r--r-- 1 root root 2082 Aug 18 11:59 /etc/passwd
+
+-----------------------------------------
+Configure auditd Rule (watch /etc/passwd)
+-----------------------------------------
+toor@ip-172-31-10-166:~$ sudo auditctl -w /etc/passwd -p wa -k passwd_changes
+toor@ip-172-31-10-166:~$
+
+-----------------------------------------
+List Current Rules
+-----------------------------------------
+toor@ip-172-31-10-166:~$ sudo auditctl -l
+-w /etc/passwd -p wa -k passwd_changes
+
+-----------------------------------------
+Generate a Change Event
+-----------------------------------------
+toor@ip-172-31-10-166:~$ sudo nano /etc/passwd
+(Change performed: added one trailing space to the end of the toor user line; saved and exited.)
+
+-----------------------------------------
+Verify Alert Generation (ausearch)
+-----------------------------------------
+toor@ip-172-31-10-166:~$ sudo ausearch -f /etc/passwd
+----
+time->Sun Aug 18 12:06:41 2025
+type=PROCTITLE msg=audit(1755518801.412:214): proctitle=6E616E6F002F6574632F706173737764
+type=PATH msg=audit(1755518801.412:214): item=0 name="/etc/passwd" inode=262150 dev=08:01 mode=0100644 ouid=0 ogid=0 rdev=00:00 nametype=NORMAL cap_fp=0 cap_fi=0 cap_fe=0 cap_fver=0
+type=CWD msg=audit(1755518801.412:214): cwd="/home/toor"
+type=SYSCALL msg=audit(1755518801.412:214): arch=c000003e syscall=2 success=yes exit=3 a0=7ffd1ce9cc19 a1=241 a2=1b6 a3=0 items=1 ppid=2487 pid=3210 auid=1001 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=pts0 ses=3 comm="nano" exe="/usr/bin/nano" key="passwd_changes"
+
+-----------------------------------------
+Verify Summary Report (aureport)
+-----------------------------------------
+toor@ip-172-31-10-166:~$ sudo aureport -f --summary | grep passwd_changes
+passwd_changes                              1
+
+-----------------------------------------
+Notes (Learner Reflection)
+-----------------------------------------
+- Monitoring sensitive files like /etc/passwd, /etc/shadow, /etc/sudoers, and /etc/ssh/sshd_config
+  helps detect persistence or privilege escalation attempts.
+- Audit keys (like passwd_changes) simplify searching and reporting.
+
+=========================================
+Lab 31 Completed Successfully
+=========================================
+✔ Installed and started auditd
+✔ Added FIM rule for /etc/passwd with key passwd_changes
+✔ Triggered a controlled change event
+✔ Verified audit logs captured the event via ausearch/aureport
