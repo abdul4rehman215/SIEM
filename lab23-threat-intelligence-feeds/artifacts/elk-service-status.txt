@@ -1,0 +1,11 @@
+● elasticsearch.service - Elasticsearch
+   Loaded: loaded (/usr/lib/systemd/system/elasticsearch.service; enabled; preset: enabled)
+   Active: active (running) since Sat 2026-02-28 12:41:11 IST; 18min ago
+
+● logstash.service - logstash
+   Loaded: loaded (/usr/lib/systemd/system/logstash.service; enabled; preset: enabled)
+   Active: active (running) since Sat 2026-02-28 12:43:02 IST; 16min ago
+
+● kibana.service - Kibana
+   Loaded: loaded (/usr/lib/systemd/system/kibana.service; enabled; preset: enabled)
+   Active: active (running) since Sat 2026-02-28 12:44:10 IST; 15min ago
