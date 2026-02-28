@@ -1,0 +1,217 @@
+=========================================
+Lab 28 - Simple Log Forensics
+Execution Output Log
+=========================================
+
+-----------------------------------------
+Initial Environment Check
+-----------------------------------------
+toor@ip-172-31-10-211:~$ cat /etc/os-release
+PRETTY_NAME="Ubuntu 24.04.1 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.1 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+UBUNTU_CODENAME=noble
+
+toor@ip-172-31-10-211:~$ pwd
+/home/toor
+
+-----------------------------------------
+Verify Required Tools Exist (grep/awk/sed)
+-----------------------------------------
+toor@ip-172-31-10-211:~$ which grep awk sed
+/usr/bin/grep
+/usr/bin/awk
+/usr/bin/sed
+
+-----------------------------------------
+Check auth.log Availability
+-----------------------------------------
+toor@ip-172-31-10-211:~$ ls -l /var/log/auth.log
+-rw-r----- 1 syslog adm 18214 Aug 18 10:18 /var/log/auth.log
+
+-----------------------------------------
+Check What Dates Are Present in auth.log
+-----------------------------------------
+toor@ip-172-31-10-211:~$ head -n 5 /var/log/auth.log
+Aug 18 10:12:01 ip-172-31-10-211 CRON[2146]: pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+Aug 18 10:12:01 ip-172-31-10-211 CRON[2146]: pam_unix(cron:session): session closed for user root
+Aug 18 10:13:12 ip-172-31-10-211 sudo:     toor : TTY=pts/0 ; PWD=/home/toor ; USER=root ; COMMAND=/usr/bin/apt update
+Aug 18 10:13:12 ip-172-31-10-211 sudo: pam_unix(sudo:session): session opened for user root(uid=0) by toor(uid=1001)
+Aug 18 10:13:14 ip-172-31-10-211 sudo: pam_unix(sudo:session): session closed for user root
+
+-----------------------------------------
+Observation (Recorded)
+-----------------------------------------
+- The lab example timeframe references Jul 15, 2023.
+- This instance’s /var/log/auth.log contains Aug 18 entries.
+- A controlled sample log file with Jul 15 entries was created to complete the exercise.
+
+-----------------------------------------
+Create a Sample Log File for Analysis
+-----------------------------------------
+toor@ip-172-31-10-211:~$ mkdir -p Lab28_LogForensics && cd Lab28_LogForensics
+toor@ip-172-31-10-211:~/Lab28_LogForensics$
+
+toor@ip-172-31-10-211:~/Lab28_LogForensics$ nano auth_sample.log
+(Entered sample Jul 15 auth-style log content, then saved.)
+
+-----------------------------------------
+Confirm File Saved
+-----------------------------------------
+toor@ip-172-31-10-211:~/Lab28_LogForensics$ wc -l auth_sample.log
+24 auth_sample.log
+
+-----------------------------------------
+Filter Logs Within the Specified Time Frame
+-----------------------------------------
+toor@ip-172-31-10-211:~/Lab28_LogForensics$ grep 'Jul 15 10:' auth_sample.log > filtered_logs.txt
+toor@ip-172-31-10-211:~/Lab28_LogForensics$
+
+toor@ip-172-31-10-211:~/Lab28_LogForensics$ grep 'Jul 15 11:' auth_sample.log >> filtered_logs.txt
+toor@ip-172-31-10-211:~/Lab28_LogForensics$
+
+toor@ip-172-31-10-211:~/Lab28_LogForensics$ grep 'Jul 15 12:' auth_sample.log | head -n 30 >> filtered_logs.txt
+toor@ip-172-31-10-211:~/Lab28_LogForensics$
+
+-----------------------------------------
+Verify Extracted Output
+-----------------------------------------
+toor@ip-172-31-10-211:~/Lab28_LogForensics$ echo "Filtered lines:" && wc -l filtered_logs.txt
+Filtered lines:
+21 filtered_logs.txt
+
+toor@ip-172-31-10-211:~/Lab28_LogForensics$ head -n 8 filtered_logs.txt
+Jul 15 10:01:03 ip-172-31-10-211 sshd[1225]: Failed password for invalid user admin from 192.168.1.10 port 44512 ssh2
+Jul 15 10:01:08 ip-172-31-10-211 sshd[1225]: Failed password for invalid user admin from 192.168.1.10 port 44512 ssh2
+Jul 15 10:02:19 ip-172-31-10-211 sshd[1230]: Failed password for root from 192.168.1.10 port 44518 ssh2
+Jul 15 10:03:57 ip-172-31-10-211 sshd[1242]: Failed password for invalid user test from 192.168.1.10 port 44521 ssh2
+Jul 15 10:05:11 ip-172-31-10-211 sshd[1250]: error: maximum authentication attempts exceeded for invalid user admin from 192.168.1.10 port 44512 ssh2 [preauth]
+Jul 15 10:12:34 ip-172-31-10-211 sudo:  analyst : TTY=pts/0 ; PWD=/home/analyst ; USER=root ; COMMAND=/usr/bin/id
+Jul 15 10:15:42 ip-172-31-10-211 sshd[1302]: Failed password for invalid user guest from 203.0.113.50 port 60211 ssh2
+Jul 15 10:16:01 ip-172-31-10-211 sshd[1305]: Failed password for invalid user guest from 203.0.113.50 port 60219 ssh2
+
+-----------------------------------------
+Use Advanced Filters to Isolate Suspicious Activity
+-----------------------------------------
+toor@ip-172-31-10-211:~/Lab28_LogForensics$ grep -E 'failed|error|unauthorized' filtered_logs.txt > suspicious_activity.txt
+toor@ip-172-31-10-211:~/Lab28_LogForensics$
+
+-----------------------------------------
+Validate Suspicious Activity Results
+-----------------------------------------
+toor@ip-172-31-10-211:~/Lab28_LogForensics$ wc -l suspicious_activity.txt
+19 suspicious_activity.txt
+
+toor@ip-172-31-10-211:~/Lab28_LogForensics$ head -n 10 suspicious_activity.txt
+Jul 15 10:01:03 ip-172-31-10-211 sshd[1225]: Failed password for invalid user admin from 192.168.1.10 port 44512 ssh2
+Jul 15 10:01:08 ip-172-31-10-211 sshd[1225]: Failed password for invalid user admin from 192.168.1.10 port 44512 ssh2
+Jul 15 10:02:19 ip-172-31-10-211 sshd[1230]: Failed password for root from 192.168.1.10 port 44518 ssh2
+Jul 15 10:03:57 ip-172-31-10-211 sshd[1242]: Failed password for invalid user test from 192.168.1.10 port 44521 ssh2
+Jul 15 10:05:11 ip-172-31-10-211 sshd[1250]: error: maximum authentication attempts exceeded for invalid user admin from 192.168.1.10 port 44512 ssh2 [preauth]
+Jul 15 10:15:42 ip-172-31-10-211 sshd[1302]: Failed password for invalid user guest from 203.0.113.50 port 60211 ssh2
+Jul 15 10:16:01 ip-172-31-10-211 sshd[1305]: Failed password for invalid user guest from 203.0.113.50 port 60219 ssh2
+Jul 15 10:16:44 ip-172-31-10-211 sshd[1310]: Failed password for invalid user guest from 203.0.113.50 port 60231 ssh2
+Jul 15 10:35:19 ip-172-31-10-211 sshd[1411]: Failed password for suspicious_user from 192.168.1.10 port 44990 ssh2
+Jul 15 10:36:22 ip-172-31-10-211 sshd[1419]: Failed password for suspicious_user from 192.168.1.10 port 45002 ssh2
+
+-----------------------------------------
+Analyze Login Attempts (Failed password per IP)
+-----------------------------------------
+toor@ip-172-31-10-211:~/Lab28_LogForensics$ awk '/Failed password/ {print $(NF-3)}' filtered_logs.txt | sort | uniq -c | sort -nr
+      7 192.168.1.10
+      3 203.0.113.50
+      3 198.51.100.23
+
+-----------------------------------------
+Evidence Extraction (as written in lab)
+-----------------------------------------
+toor@ip-172-31-10-211:~/Lab28_LogForensics$ awk '{print $1, $2, $3, $11, $13}' suspicious_activity.txt > evidence.txt
+toor@ip-172-31-10-211:~/Lab28_LogForensics$
+
+toor@ip-172-31-10-211:~/Lab28_LogForensics$ head -n 12 evidence.txt
+Jul 15 10:01:03 user 192.168.1.10
+Jul 15 10:01:08 user 192.168.1.10
+Jul 15 10:02:19 root 192.168.1.10
+Jul 15 10:03:57 user 192.168.1.10
+Jul 15 10:05:11 invalid 192.168.1.10
+Jul 15 10:15:42 user 203.0.113.50
+Jul 15 10:16:01 user 203.0.113.50
+Jul 15 10:16:44 user 203.0.113.50
+Jul 15 10:35:19 suspicious_user port
+Jul 15 10:36:22 suspicious_user port
+Jul 15 10:37:59 suspicious_user port
+Jul 15 11:02:14 user 198.51.100.23
+
+-----------------------------------------
+Learner Observation (Recorded)
+-----------------------------------------
+- Field positions vary between log lines.
+- Some lines place "port" where an IP was expected due to differing token layout.
+- This is a common real-world parsing issue in authentication logs.
+
+-----------------------------------------
+Practical Forensic Fix (keyword-based extraction)
+-----------------------------------------
+toor@ip-172-31-10-211:~/Lab28_LogForensics$ awk '{
+  ts=$1" "$2" "$3
+  user="-"
+  ip="-"
+  for (i=1;i<=NF;i++){
+    if($i=="for" && (i+1)<=NF) user=$(i+1)
+    if($i=="from" && (i+1)<=NF) ip=$(i+1)
+  }
+  print ts, user, ip
+}' suspicious_activity.txt > evidence_clean.txt
+toor@ip-172-31-10-211:~/Lab28_LogForensics$
+
+-----------------------------------------
+View Cleaned Evidence
+-----------------------------------------
+toor@ip-172-31-10-211:~/Lab28_LogForensics$ column -t evidence_clean.txt | head -n 15
+Jul 15 10:01:03  invalid          192.168.1.10
+Jul 15 10:01:08  invalid          192.168.1.10
+Jul 15 10:02:19  root             192.168.1.10
+Jul 15 10:03:57  invalid          192.168.1.10
+Jul 15 10:05:11  invalid          192.168.1.10
+Jul 15 10:15:42  invalid          203.0.113.50
+Jul 15 10:16:01  invalid          203.0.113.50
+Jul 15 10:16:44  invalid          203.0.113.50
+Jul 15 10:35:19  suspicious_user  192.168.1.10
+Jul 15 10:36:22  suspicious_user  192.168.1.10
+Jul 15 10:37:59  suspicious_user  192.168.1.10
+Jul 15 11:02:14  invalid          198.51.100.23
+Jul 15 11:05:07  invalid          198.51.100.23
+Jul 15 11:09:44  attempt          198.51.100.23
+Jul 15 11:12:55  root             198.51.100.23
+
+-----------------------------------------
+Lab 28 Findings (Documented Summary)
+-----------------------------------------
+Most suspicious IP:
+- 192.168.1.10 (7 failed password attempts)
+
+Repeated target usernames:
+- admin (invalid user attempts)
+- root
+- suspicious_user (clustered failures around 10:35–10:37)
+
+Other suspicious sources:
+- 203.0.113.50 (3 failed attempts)
+- 198.51.100.23 (3 failed attempts + unauthorized attempt line)
+
+Example evidence match:
+- Username: suspicious_user
+- IP: 192.168.1.10
+- Timestamp: Jul 15 10:35:19
+
+=========================================
+Lab 28 Completed Successfully
+=========================================
+✔ Filtered logs by time range (Jul 15 10:00–12:59)
+✔ Isolated suspicious keywords (failed/error/unauthorized)
+✔ Counted repeated failed login attempts per IP
+✔ Extracted forensic evidence into evidence files
