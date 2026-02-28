@@ -1,0 +1,6 @@
+{
+  "name" : "c3d4e5f6a7b8",
+  "cluster_name" : "docker-cluster",
+  "cluster_uuid" : "7aZz5Qb9Qm2hYd1Wg8vP0A",
+  "version" : {
+    "number" : "7.17.9",
