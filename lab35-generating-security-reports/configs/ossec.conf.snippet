@@ -1,0 +1,8 @@
+# configs/ossec.conf.snippet
+# Only the relevant configuration change applied in this lab
+
+<syscheck>
+  <frequency>3600</frequency>
+  <directories check_all="yes">/etc</directories>
+  <directories check_all="yes">/var/log</directories>
+</syscheck>
