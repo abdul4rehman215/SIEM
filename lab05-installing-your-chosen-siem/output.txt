@@ -1,0 +1,161 @@
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Hit:4 http://security.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Calculating upgrade... Done
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Package openjdk-11-jdk is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+
+E: Package 'openjdk-11-jdk' has no installation candidate
+
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  openjdk-17-jdk-headless openjdk-17-jre openjdk-17-jre-headless
+Suggested packages:
+  openjdk-17-demo openjdk-17-source visualvm
+The following NEW packages will be installed:
+  openjdk-17-jdk openjdk-17-jdk-headless openjdk-17-jre openjdk-17-jre-headless
+0 upgraded, 4 newly installed, 0 to remove and 0 not upgraded.
+Need to get 118 MB of archives.
+After this operation, 307 MB of additional disk space will be used.
+Fetched 118 MB in 4s (29.3 MB/s)
+Setting up openjdk-17-jre-headless:amd64 (17.0.12+7-1ubuntu2) ...
+Setting up openjdk-17-jre:amd64 (17.0.12+7-1ubuntu2) ...
+Setting up openjdk-17-jdk-headless:amd64 (17.0.12+7-1ubuntu2) ...
+Setting up openjdk-17-jdk:amd64 (17.0.12+7-1ubuntu2) ...
+Processing triggers for ca-certificates-java (20240110) ...
+done.
+
+openjdk version "17.0.12" 2024-07-16
+OpenJDK Runtime Environment (build 17.0.12+7-Ubuntu-1ubuntu2)
+OpenJDK 64-Bit Server VM (build 17.0.12+7-Ubuntu-1ubuntu2, mixed mode, sharing)
+
+# (no output)
+
+--2025-08-18 12:21:14--  https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.8.0-amd64.deb
+Resolving artifacts.elastic.co (artifacts.elastic.co)... 34.120.127.130, 2600:1901:0:38d6::
+Connecting to artifacts.elastic.co (artifacts.elastic.co)|34.120.127.130|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 595377824 (568M) [application/octet-stream]
+Saving to: ‘elasticsearch-8.8.0-amd64.deb’
+
+elasticsearch-8.8.0-amd64.deb    100%[====================================================>] 568.00M  23.4MB/s    in 25s
+
+2025-08-18 12:21:39 (22.7 MB/s) - ‘elasticsearch-8.8.0-amd64.deb’ saved [595377824/595377824]
+
+Selecting previously unselected package elasticsearch.
+(Reading database ... 85418 files and directories currently installed.)
+Preparing to unpack elasticsearch-8.8.0-amd64.deb ...
+Unpacking elasticsearch (8.8.0) ...
+Setting up elasticsearch (8.8.0) ...
+Created elasticsearch keystore in /etc/elasticsearch/elasticsearch.keystore
+Created symlink /etc/systemd/system/multi-user.target.wants/elasticsearch.service → /lib/systemd/system/multi-user.target.wants/elasticsearch.service.
+
+# (nano editor opened)
+
+# (no output)
+
+Synchronizing state of elasticsearch.service with SysV service script with /lib/systemd/systemd-sysv-install.
+Executing: /lib/systemd/systemd-sysv-install enable elasticsearch
+
+● elasticsearch.service - Elasticsearch
+     Loaded: loaded (/lib/systemd/system/elasticsearch.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2025-08-18 12:24:12 UTC; 18s ago
+       Docs: https://www.elastic.co
+   Main PID: 22107 (java)
+      Tasks: 79 (limit: 2234)
+     Memory: 1.2G (peak: 1.3G)
+        CPU: 11.602s
+     CGroup: /system.slice/elasticsearch.service
+             └─22107 /usr/share/elasticsearch/jdk/bin/java ...
+
+--2025-08-18 12:25:09--  https://artifacts.elastic.co/downloads/kibana/kibana-8.8.0-amd64.deb
+Resolving artifacts.elastic.co (artifacts.elastic.co)... 34.120.127.130
+Connecting to artifacts.elastic.co (artifacts.elastic.co)|34.120.127.130|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 330524672 (315M) [application/octet-stream]
+Saving to: ‘kibana-8.8.0-amd64.deb’
+
+kibana-8.8.0-amd64.deb           100%[====================================================>] 315.14M  22.8MB/s    in 15s
+
+2025-08-18 12:25:24 (21.0 MB/s) - ‘kibana-8.8.0-amd64.deb’ saved [330524672/330524672]
+
+Selecting previously unselected package kibana.
+(Reading database ... 86992 files and directories currently installed.)
+Preparing to unpack kibana-8.8.0-amd64.deb ...
+Unpacking kibana (8.8.0) ...
+Setting up kibana (8.8.0) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/kibana.service → /lib/systemd/system/multi-user.target.wants/kibana.service.
+
+# (nano editor opened)
+
+# (no output)
+
+Synchronizing state of kibana.service with SysV service script with /lib/systemd/systemd-sysv-install.
+Executing: /lib/systemd/systemd-sysv-install enable kibana
+
+● kibana.service - Kibana
+     Loaded: loaded (/lib/systemd/system/kibana.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2025-08-18 12:27:48 UTC; 20s ago
+       Docs: https://www.elastic.co
+   Main PID: 23541 (node)
+      Tasks: 12 (limit: 2234)
+     Memory: 270.4M
+        CPU: 4.014s
+     CGroup: /system.slice/kibana.service
+             └─23541 /usr/share/kibana/bin/../node/bin/node /usr/share/kibana/src/cli/dist ...
+
+--2025-08-18 12:28:32--  https://artifacts.elastic.co/downloads/logstash/logstash-8.8.0-amd64.deb
+Resolving artifacts.elastic.co (artifacts.elastic.co)... 34.120.127.130
+Connecting to artifacts.elastic.co (artifacts.elastic.co)|34.120.127.130|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 352874496 (337M) [application/octet-stream]
+Saving to: ‘logstash-8.8.0-amd64.deb’
+
+logstash-8.8.0-amd64.deb         100%[====================================================>] 336.50M  23.1MB/s    in 16s
+
+2025-08-18 12:28:48 (21.0 MB/s) - ‘logstash-8.8.0-amd64.deb’ saved [352874496/352874496]
+
+Selecting previously unselected package logstash.
+(Reading database ... 88710 files and directories currently installed.)
+Preparing to unpack logstash-8.8.0-amd64.deb ...
+Unpacking logstash (1:8.8.0-1) ...
+Setting up logstash (1:8.8.0-1) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/logstash.service → /lib/systemd/system/multi-user.target.wants/logstash.service.
+
+{
+  "name" : "ip-172-31-10-164",
+  "cluster_name" : "myELKCluster",
+  "cluster_uuid" : "Gk2mR9y5QmS8dKzT7vN1Wg",
+  "version" : {
+    "number" : "8.8.0",
+    "build_flavor" : "default",
+    "build_type" : "deb",
+    "build_hash" : "d5c2c3f1b7a0c9a8b4f3e2d1c0b9a8d7e6f5a4b3",
+    "build_date" : "2023-05-25T00:00:00.000Z",
+    "build_snapshot" : false,
+    "lucene_version" : "9.6.0",
+    "minimum_wire_compatibility_version" : "7.17.0",
+    "minimum_index_compatibility_version" : "7.0.0"
+  },
+  "tagline" : "You Know, for Search"
+}
+
+LISTEN 0      4096       127.0.0.1:9200       0.0.0.0:*    users:(("java",pid=22107,fd=372))
+LISTEN 0      4096       127.0.0.1:5601       0.0.0.0:*    users:(("node",pid=23541,fd=34))
+
+HTTP/1.1 302 Found
+location: /login?next=%2F
+kbn-name: kibana
+kbn-license-sig: 9f3b2b7d1a0c...
