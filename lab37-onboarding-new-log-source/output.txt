@@ -1,0 +1,148 @@
+=========================================
+Lab 37 - Onboarding a New Log Source
+Execution Output Log
+=========================================
+
+-----------------------------------------
+Step 0: Create working directory
+-----------------------------------------
+toor@ip-172-31-10-193:~$ mkdir -p Lab37_New_Log_Source && cd Lab37_New_Log_Source
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$
+
+-----------------------------------------
+Step 1: Update package list
+-----------------------------------------
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ sudo apt-get update
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+87 packages can be upgraded. Run 'apt list --upgradable' to see them.
+
+-----------------------------------------
+Step 2: Install wazuh-agent (as in lab)
+-----------------------------------------
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ sudo apt-get install wazuh-agent
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+E: Unable to locate package wazuh-agent
+
+-----------------------------------------
+Fix: Add Wazuh repository + install agent
+-----------------------------------------
+Install dependencies for repo setup
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ sudo apt-get install -y curl gnupg apt-transport-https
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+curl is already the newest version (8.5.0-2ubuntu10.2).
+gnupg is already the newest version (2.4.4-2ubuntu17).
+apt-transport-https is already the newest version (2.7.14).
+0 upgraded, 0 newly installed, 0 to remove and 87 not upgraded.
+
+Add Wazuh GPG key + repo
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ curl -fsSL https://packages.wazuh.com/key/GPG-KEY-WAZUH | sudo gpg --dearmor -o /etc/apt/keyrings/wazuh.gpg
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ echo "deb [signed-by=/etc/apt/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main" | sudo tee /etc/apt/sources.list.d/wazuh.list
+deb [signed-by=/etc/apt/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main
+
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ sudo apt-get update
+Get:1 https://packages.wazuh.com/4.x/apt stable InRelease [6,285 B]
+Get:2 https://packages.wazuh.com/4.x/apt stable/main amd64 Packages [18.4 kB]
+Fetched 24.7 kB in 1s (21.3 kB/s)
+Reading package lists... Done
+
+Install wazuh-agent
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ sudo apt-get install -y wazuh-agent
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following NEW packages will be installed:
+  wazuh-agent
+0 upgraded, 1 newly installed, 0 to remove and 87 not upgraded.
+Need to get 88.3 MB of archives.
+After this operation, 290 MB of additional disk space will be used.
+Get:1 https://packages.wazuh.com/4.x/apt stable/main amd64 wazuh-agent amd64 4.8.2-1 [88.3 MB]
+Fetched 88.3 MB in 6s (14.1 MB/s)
+Selecting previously unselected package wazuh-agent.
+(Reading database ... 99321 files and directories currently installed.)
+Preparing to unpack .../wazuh-agent_4.8.2-1_amd64.deb ...
+Unpacking wazuh-agent (4.8.2-1) ...
+Setting up wazuh-agent (4.8.2-1) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/wazuh-agent.service → /usr/lib/systemd/system/wazuh-agent.service.
+
+-----------------------------------------
+Step 3: Configure agent + create simulated IoT log source
+-----------------------------------------
+Check config file exists
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ sudo ls -l /var/ossec/etc/ossec.conf
+-rw-r----- 1 root wazuh 15922 Aug 18 15:22 /var/ossec/etc/ossec.conf
+
+Create simulated IoT device log file (JSON)
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ sudo mkdir -p /var/log/iot_device
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ sudo nano /var/log/iot_device/iot_events.log
+(Added JSON event lines and saved.)
+
+Confirm file content
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ sudo head -n 5 /var/log/iot_device/iot_events.log
+{"key":"device_status","value":"online","timestamp":"2023-10-16T08:55:00Z","device_id":"pi-01","ip":"192.168.10.55"}
+{"key":"temperature","value":"77F","timestamp":"2023-10-16T08:56:10Z","device_id":"pi-01","ip":"192.168.10.55"}
+{"key":"login","value":"failed","timestamp":"2023-10-16T08:57:22Z","device_id":"pi-01","ip":"192.168.10.55","user":"admin"}
+{"key":"usb_event","value":"new_device","timestamp":"2023-10-16T08:58:05Z","device_id":"pi-01","ip":"192.168.10.55"}
+{"key":"login","value":"success","timestamp":"2023-10-16T08:59:13Z","device_id":"pi-01","ip":"192.168.10.55","user":"admin"}
+
+Edit agent config (ossec.conf)
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ sudo nano /var/ossec/etc/ossec.conf
+(Added <localfile> json block for iot_events.log and configured <client><server> manager connection.)
+
+-----------------------------------------
+Step 4: Start and enable the agent
+-----------------------------------------
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ sudo systemctl start wazuh-agent
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ sudo systemctl enable wazuh-agent
+Created symlink /etc/systemd/system/multi-user.target.wants/wazuh-agent.service → /usr/lib/systemd/system/wazuh-agent.service.
+
+Check agent status
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ systemctl status wazuh-agent --no-pager | head -n 14
+● wazuh-agent.service - Wazuh agent
+     Loaded: loaded (/usr/lib/systemd/system/wazuh-agent.service; enabled; preset: enabled)
+     Active: active (running) since Sun 18 Aug 2025 15:27:12 UTC; 8s ago
+   Main PID: 5610 (wazuh-agentd)
+      Tasks: 14 (limit: 2272)
+     Memory: 32.7M
+        CPU: 412ms
+
+-----------------------------------------
+Task 3: Validate log transmission (agent logs)
+-----------------------------------------
+Follow agent logs (tail -f)
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ sudo tail -f /var/ossec/logs/ossec.log
+2025/08/18 15:27:14 wazuh-logcollector: INFO: (1950): Analyzing file: '/var/log/iot_device/iot_events.log'.
+2025/08/18 15:27:14 wazuh-agentd: INFO: (4102): Connected to the server (192.168.56.10:1514/tcp).
+2025/08/18 15:27:15 wazuh-logcollector: INFO: (1951): Reading log file: '/var/log/iot_device/iot_events.log'.
+2025/08/18 15:27:16 wazuh-agentd: INFO: (4124): Sending keep alive packet to the server.
+2025/08/18 15:27:17 wazuh-logcollector: INFO: (1952): Log file was read successfully: '/var/log/iot_device/iot_events.log'.
+(Stopped tail after verifying it’s working.)
+
+-----------------------------------------
+Parsing validation (local JSON sanity check)
+-----------------------------------------
+Install jq
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ sudo apt-get install -y jq
+
+Validate JSON structure
+toor@ip-172-31-10-193:~/Lab37_New_Log_Source$ sudo cat /var/log/iot_device/iot_events.log | jq -c '.' | head -n 3
+{"key":"device_status","value":"online","timestamp":"2023-10-16T08:55:00Z","device_id":"pi-01","ip":"192.168.10.55"}
+{"key":"temperature","value":"77F","timestamp":"2023-10-16T08:56:10Z","device_id":"pi-01","ip":"192.168.10.55"}
+{"key":"login","value":"failed","timestamp":"2023-10-16T08:57:22Z","device_id":"pi-01","ip":"192.168.10.55","user":"admin"}
+
+=========================================
+Lab 37 Completed Successfully
+=========================================
+✔ Simulated IoT JSON log source created
+✔ Wazuh agent installed and configured to ingest custom log file
+✔ Agent started and connected to manager endpoint
+✔ Logcollector confirmed file analysis, reading, and forwarding
+✔ JSON validated and ready for SIEM field parsing
