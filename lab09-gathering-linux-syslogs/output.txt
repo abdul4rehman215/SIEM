@@ -1,0 +1,46 @@
+● rsyslog.service - System Logging Service
+     Loaded: loaded (/usr/lib/systemd/system/rsyslog.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-02-28 20:41:12 UTC; 39min ago
+TriggeredBy: ● syslog.socket
+       Docs: man:rsyslogd(8)
+             https://www.rsyslog.com/doc/
+   Main PID: 812 (rsyslogd)
+      Tasks: 4 (limit: 2220)
+     Memory: 2.7M (peak: 3.4M)
+        CPU: 120ms
+     CGroup: /system.slice/rsyslog.service
+             └─812 /usr/sbin/rsyslogd -n -iNONE
+
+Feb 28 20:41:12 ip-172-31-10-219 systemd[1]: Started rsyslog.service - System Logging Service.
+Feb 28 20:41:12 ip-172-31-10-219 rsyslogd[812]: imuxsock: Acquired UNIX socket '/run/systemd/journal/syslog' (fd 3) from systemd.
+Feb 28 20:41:12 ip-172-31-10-219 rsyslogd[812]: rsyslogd's groupid changed to 110
+Feb 28 20:41:12 ip-172-31-10-219 rsyslogd[812]: rsyslogd's userid changed to 104
+Feb 28 20:41:12 ip-172-31-10-219 rsyslogd[812]: [origin software="rsyslogd" swVersion="8.2312.0" x-pid="812" x-info="https://www.rsyslog.com"] start
+
+Synchronizing state of rsyslog.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
+Executing: /usr/lib/systemd/systemd-sysv-install enable rsyslog
+
+# (nano editor opened)
+
+19:module(load="imudp") # Start UDP listener module
+20:input(type="imudp" port="514") # Listen on UDP port 514
+89:*.* @10.0.2.15:5544
+
+● rsyslog.service - System Logging Service
+     Loaded: loaded (/usr/lib/systemd/system/rsyslog.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-02-28 21:23:05 UTC; 2s ago
+TriggeredBy: ● syslog.socket
+   Main PID: 1962 (rsyslogd)
+      Tasks: 4 (limit: 2220)
+     Memory: 2.8M (peak: 3.1M)
+        CPU: 16ms
+     CGroup: /system.slice/rsyslog.service
+             └─1962 /usr/sbin/rsyslogd -n -iNONE
+
+Feb 28 21:23:05 ip-172-31-10-219 systemd[1]: Started rsyslog.service - System Logging Service.
+Feb 28 21:23:05 ip-172-31-10-219 rsyslogd[1962]: [origin software="rsyslogd" swVersion="8.2312.0" x-pid="1962" x-info="https://www.rsyslog.com"] start
+
+Feb 28 21:23:18 ip-172-31-10-219 systemd[1]: rsyslog.service: Deactivated successfully.
+Feb 28 21:23:18 ip-172-31-10-219 systemd[1]: Started rsyslog.service - System Logging Service.
+Feb 28 21:23:18 ip-172-31-10-219 rsyslogd[1962]: [origin software="rsyslogd" swVersion="8.2312.0" x-pid="1962" x-info="https://www.rsyslog.com"] start
+Feb 28 21:25:02 ip-172-31-10-219 toor[2077]: Test log message from ip-172-31-10-219
