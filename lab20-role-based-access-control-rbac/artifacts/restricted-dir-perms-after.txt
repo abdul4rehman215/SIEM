@@ -1,0 +1,3 @@
+# Directory permissions after admin full-access setup
+
+drwxrwx--- 2 admin_user admin 4096 Aug 18 12:44 /var/restricted
