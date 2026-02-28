@@ -1,0 +1,4 @@
+module(load="imudp") # Start UDP listener module
+input(type="imudp" port="514") # Listen on UDP port 514
+
+*.* @10.0.2.15:5544
