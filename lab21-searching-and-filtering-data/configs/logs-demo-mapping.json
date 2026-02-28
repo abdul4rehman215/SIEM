@@ -1,0 +1,14 @@
+{
+  "mappings": {
+    "properties": {
+      "@timestamp": { "type": "date" },
+      "message": { "type": "text" },
+      "severity": { "type": "keyword" },
+      "source": {
+        "properties": {
+          "ip": { "type": "ip" }
+        }
+      }
+    }
+  }
+}
