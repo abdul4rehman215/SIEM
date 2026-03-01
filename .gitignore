@@ -1,0 +1,145 @@
+# ==========================================================
+# OS / Editor Artifacts
+# ==========================================================
+.DS_Store
+Thumbs.db
+Desktop.ini
+*~
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# ==========================================================
+# Python
+# ==========================================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+build/
+dist/
+pip-wheel-metadata/
+.pytest_cache/
+
+# Virtual Environments
+.venv/
+venv/
+env/
+elastalert-venv/
+
+# ==========================================================
+# Node / Frontend (Kibana / builds if applicable)
+# ==========================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==========================================================
+# Logs / Large Generated Outputs
+# ==========================================================
+*.log
+*.out
+*.err
+logs/
+log/
+output/
+outputs/
+
+# Network captures (can be very large)
+*.pcap
+*.pcapng
+*.cap
+
+# Zeek large logs
+**/zeek/logs/
+**/zeek_logs/
+**/conn.log
+**/dns.log
+**/http.log
+**/notice.log
+**/weird.log
+
+# ==========================================================
+# Elasticsearch / Logstash / Kibana Runtime Data
+# ==========================================================
+data/
+es-data/
+elasticsearch-data/
+**/elasticsearch/nodes/
+**/nodes/
+
+logstash-data/
+logstash/logs/
+*.sincedb*
+
+kibana-data/
+kibana/optimize/
+
+# ==========================================================
+# Prometheus / Monitoring Data
+# ==========================================================
+prometheus_data/
+**/prometheus/data/
+**/wal/
+
+# ==========================================================
+# Wazuh / OSSEC Runtime
+# ==========================================================
+**/var/ossec/queue/
+**/var/ossec/var/
+**/var/ossec/tmp/
+
+# ==========================================================
+# Docker
+# ==========================================================
+docker-compose.override.yml
+**/docker-volumes/
+**/volumes/
+*.pid
+
+# ==========================================================
+# Secrets / Sensitive Data (IMPORTANT)
+# ==========================================================
+.env
+.env.*
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+secrets/
+**/*secret*
+**/*password*
+**/*token*
+**/*apikey*
+**/*credentials*
+
+# ==========================================================
+# Archives / Installers
+# ==========================================================
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.7z
+*.deb
+*.rpm
+*.iso
+*.vdi
+*.vmdk
+*.ova
+
+# ==========================================================
+# Temporary / Backup Files
+# ==========================================================
+*.tmp
+*.bak
+
+# ==========================================================
+# Optional: Reports (Uncomment if you do NOT want PDFs committed)
+# ==========================================================
+# *.pdf
+# *.csv
