@@ -3,7 +3,7 @@
 > Enterprise SIEM Architecture • Log Pipeline Engineering • Detection Foundations • SOC Operations • Alerting & IR Workflow • SIEM Operations Maturity
 
 ### A complete 40-lab hands-on SIEM engineering program progressing from log pipeline architecture and multi-source ingestion to detection logic, alert tuning, SOC investigations, automation, governance, and SIEM maturity planning.
-### Simulates real-world SOC Tier 1 → Tier 2 → SIEM Engineering workflows across endpoint, server, and network telemetry.\
+### Simulates real-world SOC Tier 1 → Tier 2 → SIEM Engineering workflows across endpoint, server, and network telemetry.
 
 <div align="center">
   
