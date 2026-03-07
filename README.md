@@ -32,10 +32,10 @@
 ![Status](https://img.shields.io/badge/Status-Completed-success?style=for-the-badge)
 
 <!-- ===================== REPO METADATA (EDIT IF NEEDED) ===================== -->
-![Repo Size](https://img.shields.io/github/repo-size/abdul4rehman215/SIEM?style=for-the-badge)
-![Stars](https://img.shields.io/github/stars/abdul4rehman215/SIEM?style=for-the-badge)
-![Forks](https://img.shields.io/github/forks/abdul4rehman215/SIEM?style=for-the-badge)
-![Last Commit](https://img.shields.io/github/last-commit/abdul4rehman215/SIEM?style=for-the-badge)
+![Repo Size](https://img.shields.io/github/repo-size/abdul4rehman215/Security-Information-Event-Management-SIEM?style=for-the-badge)
+![Stars](https://img.shields.io/github/stars/abdul4rehman215/Security-Information-Event-Management-SIEM?style=for-the-badge)
+![Forks](https://img.shields.io/github/forks/abdul4rehman215/Security-Information-Event-Management-SIEM?style=for-the-badge)
+![Last Commit](https://img.shields.io/github/last-commit/abdul4rehman215/Security-Information-Event-Management-SIEM?style=for-the-badge)
 
 </div>
 
